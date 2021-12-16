@@ -5,6 +5,7 @@ import {
   Session,
   Get,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import { IsEmail, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
 import { AuthService } from './auth.service';
@@ -130,5 +131,15 @@ export class AuthController {
     const { providerData: _, ...toReturn } = session.user;
 
     return toReturn;
+  }
+
+  @Delete('logout')
+  @UseGuards(IsLoggedIn)
+  async logout(@Session() session: Record<any, any>) {
+    delete session.user;
+    delete session.loggedIn;
+    delete session.logInAt;
+
+    return { message: 'Logged out' };
   }
 }
