@@ -3,7 +3,7 @@ import { Schema as MongooseSchema, Model, Document } from 'mongoose';
 
 @Schema()
 export class User {
-  @Prop({ requried: true })
+  @Prop({ requried: true, unique: true })
   email: string;
 
   @Prop({ requried: true })

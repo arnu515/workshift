@@ -42,8 +42,8 @@ export class AuthService {
       provider = 'local';
       providerId = this.usersService.hashPw(password);
     }
-    let user = await this.users.findOne({ $or: [{ email }, { username }] });
-    if (user) return 'Email or username already exists';
+    let user = await this.users.findOne({ email });
+    if (user) return 'Email already exists';
 
     user = new this.users({
       email,
