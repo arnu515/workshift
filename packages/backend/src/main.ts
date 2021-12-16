@@ -3,6 +3,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
+import grant from 'grant';
+import { grantConfig } from './config/grant.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -24,6 +26,7 @@ async function bootstrap() {
       }),
     }),
   );
+  app.use(grant.express(grantConfig));
   await app.listen(process.env.PORT || 5000);
 }
 bootstrap();
