@@ -1,14 +1,14 @@
-import { Controller, Get, Param, Post, Body } from '@nestjs/common';
-import { OrganisationsService } from './organisations.service';
+import { Controller, Get, Param, Post, Body } from "@nestjs/common";
+import { OrganisationsService } from "./organisations.service";
 import {
   MinLength,
   MaxLength,
   IsNotEmpty,
   IsEmail,
   IsUrl,
-  IsOptional,
-} from 'class-validator';
-import httpError from 'http-errors';
+  IsOptional
+} from "class-validator";
+import httpError from "http-errors";
 
 class CreateOrganisationBody {
   @MinLength(4)
@@ -42,24 +42,24 @@ class CreateOrganisationBody {
   email?: string;
 }
 
-@Controller('organisations')
+@Controller("organisations")
 export class OrganisationsController {
   constructor(private organisationsService: OrganisationsService) {}
 
-  @Get(':id')
-  async getOrgById(@Param('id') id: string) {
+  @Get(":id")
+  async getOrgById(@Param("id") id: string) {
     const org = await this.organisationsService.getOrgById(id);
     if (!org) {
-      return httpError(404, 'Organisation not found');
+      return httpError(404, "Organisation not found");
     }
     return org;
   }
 
-  @Post('/')
+  @Post("/")
   async createOrganisation(@Body() body: CreateOrganisationBody) {
     const org = await this.organisationsService.createOrganisation(body);
 
-    if (typeof org === 'string') {
+    if (typeof org === "string") {
       return httpError(400, org);
     }
 

@@ -1,5 +1,5 @@
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Schema as MongooseSchema, Model, Document } from 'mongoose';
+import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
+import { Schema as MongooseSchema, Model, Document } from "mongoose";
 
 @Schema()
 export class User {
@@ -9,7 +9,7 @@ export class User {
   @Prop({ requried: true })
   username: string;
 
-  @Prop({ enum: ['local', 'github', 'discord'] })
+  @Prop({ enum: ["local", "github", "discord"] })
   provider: string;
 
   // providerId will be the user's hashed password when using "local" provider

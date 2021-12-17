@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { User, UserModel } from './users.schema';
-import { hashSync, genSaltSync, compareSync } from 'bcryptjs';
-import { InjectModel } from '@nestjs/mongoose';
+import { Injectable } from "@nestjs/common";
+import { User, UserModel } from "./users.schema";
+import { hashSync, genSaltSync, compareSync } from "bcryptjs";
+import { InjectModel } from "@nestjs/mongoose";
 
 @Injectable()
 export class UsersService {

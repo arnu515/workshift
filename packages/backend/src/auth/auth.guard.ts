@@ -2,8 +2,8 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+  UnauthorizedException
+} from "@nestjs/common";
 
 @Injectable()
 export class IsLoggedIn implements CanActivate {
@@ -17,8 +17,6 @@ export class IsLoggedIn implements CanActivate {
     delete session.loggedIn;
     delete session.logInAt;
 
-    throw new UnauthorizedException(
-      'You must be logged in to access this resource.',
-    );
+    throw new UnauthorizedException("You must be logged in to access this resource.");
   }
 }
