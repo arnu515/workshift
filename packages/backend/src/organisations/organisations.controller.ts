@@ -20,6 +20,13 @@ export class OrganisationsController {
     private invitesService: InvitesService
   ) {}
 
+  @Get("/invites")
+  @UseGuards(IsLoggedIn)
+  async getUserInvites(@Session() session: Record<any, any>) {
+    console.log(session.user);
+    return await this.invitesService.getUserInvites(session.user.id);
+  }
+
   @Get(":id")
   async getOrgById(@Param("id") id: string) {
     if (!isMongoId(id)) {
@@ -115,13 +122,6 @@ export class OrganisationsController {
     });
 
     return { org, invite };
-  }
-
-  @Post("/invites")
-  @UseGuards(IsLoggedIn)
-  async getUserInvites(@Session() session: Record<any, any>) {
-    console.log(session.user);
-    return await this.invitesService.getUserInvites(session.user.id);
   }
 
   @Post("/:id/invites")
