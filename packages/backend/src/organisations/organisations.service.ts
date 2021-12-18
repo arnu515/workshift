@@ -1,20 +1,57 @@
+import { PrismaService } from "@/prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Organisation, OrganisationModel } from "./organisations.schema";
-import { User } from "@/auth/users/users.schema";
 import axios from "axios";
+import type { User } from "@prisma/client";
+import {
+  MinLength,
+  MaxLength,
+  IsNotEmpty,
+  IsEmail,
+  IsUrl,
+  IsOptional
+} from "class-validator";
+
+export class CreateOrganisationBody {
+  @MinLength(4)
+  @MaxLength(128)
+  @IsNotEmpty()
+  name: string;
+
+  @MinLength(4)
+  @MaxLength(2048)
+  @IsNotEmpty()
+  description: string;
+
+  @IsUrl({ require_protocol: true })
+  @IsNotEmpty()
+  imageUrl: string;
+
+  @IsOptional()
+  @IsUrl({ require_protocol: true })
+  website?: string;
+
+  @IsOptional()
+  @MaxLength(2048)
+  address?: string;
+
+  @IsOptional()
+  @MaxLength(2048)
+  location?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+}
 
 @Injectable()
 export class OrganisationsService {
-  constructor(
-    @InjectModel(Organisation.name) public organisations: OrganisationModel
-  ) {}
+  constructor(private db: PrismaService) {}
 
   getOrgById(id: string) {
-    return this.organisations.findById(id);
+    return this.db.organisation.findFirst({ where: { id }, include: { owner: true } });
   }
 
-  async createOrganisation(body: Omit<Organisation, "owner">, owner: User) {
+  async createOrganisation(body: CreateOrganisationBody, owner: User) {
     // check that imageUrl is a url from Imgur or Gravatar
     const imageUrl = new URL(body.imageUrl);
     if (imageUrl.hostname !== "i.imgur.com" && imageUrl.hostname !== "gravatar.com") {
@@ -42,35 +79,38 @@ export class OrganisationsService {
 
     // trim every string in body
     Object.keys(body).forEach(x => {
-      // these dumb things have to be done because I'm bad at typescript
-      // please submit a PR if you know a better way to avoid type errors
       const key = x as keyof typeof body;
-      const item = body[key];
-      if (typeof item === "string") {
-        body[key] = item!.trim() as any;
+      if (typeof body[key] === "string") {
+        // I genuinely do not know why I have to cast this to never.
+        // If you're good at typescript, and know a fix, please PR it up!
+        body[key] = body[key]!.toString().trim() as never;
       }
     });
 
-    return await this.organisations.create({
-      ...body,
-      owner
+    return await this.db.organisation.create({
+      data: {
+        ...body,
+        owner_id: owner.id
+      }
     });
   }
 
   getUserOrgs(userId: string) {
-    return this.organisations.find({ owner: userId }).exec();
+    return this.db.organisation.findMany({
+      where: { owner_id: userId },
+      include: { owner: true }
+    });
   }
 
   getUserMemberships(userId: string) {
     // get organisations where the members contains the user's id
-    return this.organisations
-      .find({
-        members: {
-          $elemMatch: {
-            $eq: userId
-          }
-        }
-      })
-      .exec();
+    return this.db.organisation.findMany({
+      where: {
+        member_ids: { has: userId }
+      },
+      include: {
+        owner: true
+      }
+    });
   }
 }

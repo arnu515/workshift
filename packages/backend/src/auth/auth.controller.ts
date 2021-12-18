@@ -40,11 +40,11 @@ export class AuthController {
       return httpError(400, user);
     }
 
-    session.user = user.toObject();
+    session.user = { ...user };
     session.loggedIn = true;
     session.logInAt = new Date();
 
-    const { providerData: _, ...toReturn } = user.toObject();
+    const { providerData: _, ...toReturn } = user;
     return toReturn;
   }
 
@@ -63,11 +63,11 @@ export class AuthController {
       return httpError(400, user);
     }
 
-    session.user = user.toObject();
+    session.user = { ...user };
     session.loggedIn = true;
     session.logInAt = new Date();
 
-    const { providerData: _, ...toReturn } = user.toObject();
+    const { providerData: _, ...toReturn } = user;
 
     return toReturn;
   }
@@ -115,7 +115,7 @@ export class AuthController {
       return httpError(400, user);
     }
 
-    const { providerData: _, ...toReturn } = user.toObject();
+    const { providerData: _, ...toReturn } = user;
 
     return toReturn;
   }

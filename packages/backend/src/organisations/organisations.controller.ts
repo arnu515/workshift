@@ -1,50 +1,10 @@
 import { Controller, Get, Param, Post, Body, UseGuards, Session } from "@nestjs/common";
-import { OrganisationsService } from "./organisations.service";
-import {
-  MinLength,
-  MaxLength,
-  IsNotEmpty,
-  IsEmail,
-  IsUrl,
-  IsOptional,
-  IsMongoId
-} from "class-validator";
+import { CreateOrganisationBody, OrganisationsService } from "./organisations.service";
+import { IsNotEmpty, IsMongoId } from "class-validator";
 import { IsLoggedIn } from "../auth/auth.guard";
-import { UsersService } from "@/auth/users/users.service";
 import { InvitesService } from "./invites/invites.service";
 import httpError from "http-errors";
-
-class CreateOrganisationBody {
-  @MinLength(4)
-  @MaxLength(128)
-  @IsNotEmpty()
-  name: string;
-
-  @MinLength(4)
-  @MaxLength(2048)
-  @IsNotEmpty()
-  description: string;
-
-  @IsUrl({ require_protocol: true })
-  @IsNotEmpty()
-  imageUrl: string;
-
-  @IsOptional()
-  @IsUrl({ require_protocol: true })
-  website?: string;
-
-  @IsOptional()
-  @MaxLength(2048)
-  address?: string;
-
-  @IsOptional()
-  @MaxLength(2048)
-  location?: string;
-
-  @IsOptional()
-  @IsEmail()
-  email?: string;
-}
+import { PrismaService } from "@/prisma/prisma.service";
 
 class InviteToOrganisationBody {
   @IsMongoId({ message: "Invalid user ID" })
@@ -55,8 +15,8 @@ class InviteToOrganisationBody {
 @Controller("organisations")
 export class OrganisationsController {
   constructor(
+    private db: PrismaService,
     private organisationsService: OrganisationsService,
-    private usersService: UsersService,
     private invitesService: InvitesService
   ) {}
 
@@ -96,17 +56,21 @@ export class OrganisationsController {
       return httpError(404, "Organisation not found");
     }
 
-    if (org.owner.toString() !== session.user._id.toString()) {
+    if (org.owner.toString() !== session.user.id.toString()) {
       return httpError(403, "You don't own this organisation");
     }
 
-    const invitedUser: any = await this.usersService.users.findById(body.userId);
+    const invitedUser = await this.db.user.findFirst({ where: { id: body.userId } });
 
-    if (invitedUser._id.toString() === session.user._id.toString()) {
+    if (!invitedUser) {
+      return httpError(404, "User not found");
+    }
+
+    if (invitedUser.id.toString() === session.user.id.toString()) {
       return httpError(400, "You can't invite yourself to an organisation");
     }
 
-    if (invitedUser._id.toString() === org.owner.toString()) {
+    if (invitedUser.id.toString() === org.owner.toString()) {
       return httpError(400, "This user is the owner of this organisation");
     }
 
@@ -116,7 +80,7 @@ export class OrganisationsController {
       return httpError(404, "User not found");
     }
 
-    if (invitedUser._id.toString() === session.user._id.toString()) {
+    if (invitedUser.id.toString() === session.user.id.toString()) {
       return httpError(400, "You can't invite yourself");
     }
 
@@ -124,9 +88,11 @@ export class OrganisationsController {
       return httpError(400, "User is already a member of this organisation");
     }
 
-    let invite = await this.invitesService.invites.findOne({
-      organisation: org._id,
-      toUser: invitedUser._id
+    let invite = await this.invitesService.invites.findFirst({
+      where: {
+        organisation_id: org.id,
+        user_id: invitedUser.id
+      }
     });
 
     if (invite) {
@@ -134,8 +100,10 @@ export class OrganisationsController {
     }
 
     invite = await this.invitesService.invites.create({
-      organisation: org._id,
-      toUser: invitedUser._id
+      data: {
+        organisation_id: org.id,
+        user_id: invitedUser.id
+      }
     });
 
     return { org, invite };
@@ -144,8 +112,8 @@ export class OrganisationsController {
   @Post("/invites")
   @UseGuards(IsLoggedIn)
   async getUserInvites(@Session() session: Record<any, any>) {
-    console.log(session.user)
-    return await this.invitesService.getUserInvites(session.user._id);
+    console.log(session.user);
+    return await this.invitesService.getUserInvites(session.user.id);
   }
 
   @Post("/:id/invites")
@@ -156,7 +124,7 @@ export class OrganisationsController {
       return httpError(404, "Organisation not found");
     }
 
-    if (org.owner.toString() !== session.user._id.toString()) {
+    if (org.owner.toString() !== session.user.id.toString()) {
       return httpError(403, "You don't own this organisation");
     }
 

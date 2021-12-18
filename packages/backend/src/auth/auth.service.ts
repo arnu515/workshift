@@ -1,6 +1,7 @@
+import { PrismaService } from "@/prisma/prisma.service";
+import { hashSync, compareSync, genSaltSync } from "bcryptjs";
 import { Injectable } from "@nestjs/common";
-import { UserModel } from "./users/users.schema";
-import { UsersService } from "./users/users.service";
+import type { User } from "@prisma/client";
 
 interface CreateUserArgs {
   email: string;
@@ -13,19 +14,23 @@ interface CreateUserArgs {
 
 @Injectable()
 export class AuthService {
-  users: UserModel;
+  constructor(private db: PrismaService) {}
 
-  constructor(private usersService: UsersService) {
-    this.users = usersService.users;
+  private checkPw(user: User, password: string) {
+    return compareSync(password, user.providerId);
+  }
+
+  private hashPw(password: string) {
+    return hashSync(password, genSaltSync());
   }
 
   async local(email: string, password: string) {
-    const user = await this.users.findOne({ email });
+    const user = await this.db.user.findFirst({ where: { email } });
 
     if (!user) return "Invalid email";
     if (user.provider !== "local")
       return `You can't login with a password. Please use "${user.provider}" instead.`;
-    if (!this.usersService.checkPw(user, password)) return "Invalid password";
+    if (!this.checkPw(user, password)) return "Invalid password";
 
     return user;
   }
@@ -40,20 +45,20 @@ export class AuthService {
   }: CreateUserArgs) {
     if (password) {
       provider = "local";
-      providerId = this.usersService.hashPw(password);
+      providerId = this.hashPw(password);
     }
-    let user = await this.users.findOne({ email });
+    let user = await this.db.user.findFirst({ where: { email } });
     if (user) return "Email already exists";
 
-    user = new this.users({
-      email,
-      username,
-      provider,
-      providerId,
-      providerData
+    user = await this.db.user.create({
+      data: {
+        email,
+        username,
+        provider: provider!,
+        providerId: providerId!,
+        providerData
+      }
     });
-
-    await user.save();
 
     return user;
   }
