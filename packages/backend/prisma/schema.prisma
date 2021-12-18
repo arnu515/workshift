@@ -28,6 +28,10 @@ model Organisation {
   member_ids  String[] @db.Array(ObjectId)
   name        String
   owner_id    String   @db.ObjectId
+  location    String?
+  email       String?
+  website     String?
+  address     String?
 
   invites OrganisationInvites[]
   owner   User                  @relation(name: "owner", fields: [owner_id], references: [id])
