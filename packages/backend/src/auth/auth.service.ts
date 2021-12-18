@@ -35,6 +35,10 @@ export class AuthService {
     return user;
   }
 
+  async getUser(email: string) {
+    return await this.db.user.findFirst({ where: { email } });
+  }
+
   async createUser({
     email,
     username,
