@@ -1,4 +1,13 @@
-import { Controller, Get, Param, Post, Body, UseGuards, Session } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Body,
+  UseGuards,
+  Session,
+  Patch
+} from "@nestjs/common";
 import { CreateOrganisationBody, OrganisationsService } from "./organisations.service";
 import { IsNotEmpty, IsMongoId, isMongoId } from "class-validator";
 import { IsLoggedIn } from "../auth/auth.guard";
@@ -141,5 +150,47 @@ export class OrganisationsController {
     }
 
     return { invites: await this.invitesService.getOrgInvites(id) };
+  }
+
+  @Patch("/:id/invites/:inviteId")
+  @UseGuards(IsLoggedIn)
+  async acceptOrDeclineInvite(
+    @Body("action") action: string,
+    @Param("id") id: string,
+    @Param("inviteId") inviteId: string,
+    @Session() session: Record<any, any>
+  ) {
+    if (!["accept", "decline"].includes(action)) {
+      return httpError(400, "Invalid action");
+    }
+
+    const invite = await this.invitesService.invites.findFirst({
+      where: {
+        id: inviteId
+      }
+    });
+
+    if (!invite) {
+      return httpError(404, "Invite not found");
+    }
+
+    if (invite.organisation_id.toString() !== id) {
+      return httpError(400, "This invite does not belong to this organisation");
+    }
+
+    if (invite.user_id !== session.user.id.toString()) {
+      return httpError(403, "This invite does not belong to you");
+    }
+
+    if (action === "accept") {
+      const org = await this.organisationsService.addUserToOrg(invite.user_id, id);
+      if (typeof org === "string") {
+        return httpError(400, org);
+      }
+    }
+
+    await this.invitesService.invites.delete({ where: { id: invite.id } });
+
+    return { message: `Invite ${action}ed` };
   }
 }

@@ -113,4 +113,26 @@ export class OrganisationsService {
       }
     });
   }
+
+  async addUserToOrg(userId: string, orgId: string) {
+    const org = await this.db.organisation.findFirst({
+      where: { id: orgId }
+    });
+    if (!org) {
+      return "Organisation not found";
+    }
+
+    if (org.member_ids.includes(userId)) {
+      return "User is already a member of this organisation";
+    }
+
+    return this.db.organisation.update({
+      where: { id: orgId },
+      data: {
+        member_ids: {
+          set: [...org.member_ids, userId]
+        }
+      }
+    });
+  }
 }
