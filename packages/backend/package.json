@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma": "prisma",
     "genschema": "PRISMA_GENERATE_SKIP_AUTOINSTALL=1 prisma generate",
-    "gendb": "prisma db push --skip-generation",
+    "gendb": "prisma db push --skip-generate",
     "gen": "yarn genschema && yarn gendb"
   },
   "dependencies": {
