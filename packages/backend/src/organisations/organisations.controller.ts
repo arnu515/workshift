@@ -3,7 +3,7 @@ import { CreateOrganisationBody, OrganisationsService } from "./organisations.se
 import { IsNotEmpty, IsMongoId, isMongoId } from "class-validator";
 import { IsLoggedIn } from "../auth/auth.guard";
 import { InvitesService } from "./invites/invites.service";
-import httpError from "http-errors";
+import { httpError } from "@/util";
 import { PrismaService } from "@/prisma/prisma.service";
 
 class InviteToOrganisationBody {
