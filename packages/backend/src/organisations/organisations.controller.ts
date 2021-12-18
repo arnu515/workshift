@@ -71,7 +71,7 @@ export class OrganisationsController {
       return httpError(404, "Organisation not found");
     }
 
-    if (org.owner.toString() !== session.user.id.toString()) {
+    if (org.owner_id.toString() !== session.user.id.toString()) {
       return httpError(403, "You don't own this organisation");
     }
 
