@@ -117,6 +117,10 @@ export class AuthController {
 
     const { providerData: _, ...toReturn } = user;
 
+    session.user = { ...user };
+    session.loggedIn = true;
+    session.logInAt = new Date();
+
     return toReturn;
   }
 
