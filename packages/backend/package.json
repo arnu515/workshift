@@ -17,7 +17,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "prisma": "prisma",
+    "generatedb": "PRISMA_GENERATE_SKIP_AUTOINSTALL=1 prisma generate"
   },
   "dependencies": {
     "@nestjs/common": "^8.1.1",
@@ -25,6 +27,7 @@
     "@nestjs/core": "^8.1.1",
     "@nestjs/mongoose": "^9.0.1",
     "@nestjs/platform-express": "^8.1.1",
+    "@prisma/client": "^3.6.0",
     "@types/express-session": "^1.17.4",
     "axios": "^0.24.0",
     "bcryptjs": "^2.4.3",
