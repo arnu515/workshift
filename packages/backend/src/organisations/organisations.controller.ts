@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Post, Body, UseGuards, Session } from "@nestjs/common";
 import { CreateOrganisationBody, OrganisationsService } from "./organisations.service";
-import { IsNotEmpty, IsMongoId } from "class-validator";
+import { IsNotEmpty, IsMongoId, isMongoId } from "class-validator";
 import { IsLoggedIn } from "../auth/auth.guard";
 import { InvitesService } from "./invites/invites.service";
 import httpError from "http-errors";
@@ -22,6 +22,10 @@ export class OrganisationsController {
 
   @Get(":id")
   async getOrgById(@Param("id") id: string) {
+    if (!isMongoId(id)) {
+      return httpError(400, "Invalid ID");
+    }
+
     const org = await this.organisationsService.getOrgById(id);
     if (!org) {
       return httpError(404, "Organisation not found");
@@ -51,6 +55,10 @@ export class OrganisationsController {
     @Session() session: Record<any, any>,
     @Param("id") id: string
   ) {
+    if (!isMongoId(id)) {
+      return httpError(400, "Invalid ID");
+    }
+
     const org = await this.organisationsService.getOrgById(id);
     if (!org) {
       return httpError(404, "Organisation not found");
@@ -119,6 +127,10 @@ export class OrganisationsController {
   @Post("/:id/invites")
   @UseGuards(IsLoggedIn)
   async getOrgInvites(@Param("id") id: string, @Session() session: Record<any, any>) {
+    if (!isMongoId(id)) {
+      return httpError(400, "Invalid ID");
+    }
+
     const org = await this.organisationsService.getOrgById(id);
     if (!org) {
       return httpError(404, "Organisation not found");
