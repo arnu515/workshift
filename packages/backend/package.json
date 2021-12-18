@@ -19,8 +19,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma": "prisma",
-    "gendb": "prisma db push --skip-generate",
-    "genschema": "PRISMA_GENERATE_SKIP_AUTOINSTALL=1 prisma generate",
+    "gendb": "prisma db push --skip-generate --schema=src/prisma/schema.prisma",
+    "genschema": "PRISMA_GENERATE_SKIP_AUTOINSTALL=1 prisma generate --schema=src/prisma/schema.prisma",
     "gen": "yarn gendb && yarn genschema"
   },
   "dependencies": {
