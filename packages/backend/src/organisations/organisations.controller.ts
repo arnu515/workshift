@@ -140,4 +140,26 @@ export class OrganisationsController {
 
     return { org, invite };
   }
+
+  @Post("/invites")
+  @UseGuards(IsLoggedIn)
+  async getUserInvites(@Session() session: Record<any, any>) {
+    console.log(session.user)
+    return await this.invitesService.getUserInvites(session.user._id);
+  }
+
+  @Post("/:id/invites")
+  @UseGuards(IsLoggedIn)
+  async getOrgInvites(@Param("id") id: string, @Session() session: Record<any, any>) {
+    const org = await this.organisationsService.getOrgById(id);
+    if (!org) {
+      return httpError(404, "Organisation not found");
+    }
+
+    if (org.owner.toString() !== session.user._id.toString()) {
+      return httpError(403, "You don't own this organisation");
+    }
+
+    return await this.invitesService.getOrgInvites(id);
+  }
 }

@@ -8,4 +8,12 @@ export class InvitesService {
     @InjectModel(OrganisationInvite.name)
     public invites: OrganisationInviteModel
   ) {}
+
+  getUserInvites(userId: string) {
+    return this.invites.find({ toUser: userId }).exec();
+  }
+
+  getOrgInvites(orgId: string) {
+    return this.invites.find({ organisation: orgId }).exec();
+  }
 }
