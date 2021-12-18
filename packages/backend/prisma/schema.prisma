@@ -10,7 +10,7 @@ datasource db {
 
 model OrganisationInvites {
   id              String @id @default(dbgenerated()) @map("_id") @db.ObjectId
-  v               Int    @map("__v")
+  v               Int?   @map("__v")
   organisation_id String @db.ObjectId
   user_id         String @db.ObjectId
 
@@ -22,7 +22,7 @@ model OrganisationInvites {
 
 model Organisation {
   id          String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
-  v           Int      @map("__v")
+  v           Int?     @map("__v")
   description String
   imageUrl    String
   member_ids  String[] @db.Array(ObjectId)
@@ -38,7 +38,7 @@ model Organisation {
 
 model User {
   id               String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
-  v                Int      @map("__v")
+  v                Int?     @map("__v")
   email            String   @unique(map: "email_1")
   provider         String
   providerData     Json?
