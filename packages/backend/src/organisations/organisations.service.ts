@@ -90,7 +90,8 @@ export class OrganisationsService {
     return await this.db.organisation.create({
       data: {
         ...body,
-        owner_id: owner.id
+        owner_id: owner.id,
+        member_ids: [owner.id]
       }
     });
   }
