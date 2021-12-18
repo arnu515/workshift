@@ -55,7 +55,7 @@ export class OrganisationsController {
     return org;
   }
 
-  @Post("/:id/invite")
+  @Post("/:id/invites")
   @UseGuards(IsLoggedIn)
   async inviteToOrganisation(
     @Body() body: InviteToOrganisationBody,
@@ -124,7 +124,7 @@ export class OrganisationsController {
     return { org, invite };
   }
 
-  @Post("/:id/invites")
+  @Get("/:id/invites")
   @UseGuards(IsLoggedIn)
   async getOrgInvites(@Param("id") id: string, @Session() session: Record<any, any>) {
     if (!isMongoId(id)) {
