@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { UserModel } from './users/users.schema';
-import { UsersService } from './users/users.service';
+import { Injectable } from "@nestjs/common";
+import { UserModel } from "./users/users.schema";
+import { UsersService } from "./users/users.service";
 
 interface CreateUserArgs {
   email: string;
@@ -22,10 +22,10 @@ export class AuthService {
   async local(email: string, password: string) {
     const user = await this.users.findOne({ email });
 
-    if (!user) return 'Invalid email';
-    if (user.provider !== 'local')
+    if (!user) return "Invalid email";
+    if (user.provider !== "local")
       return `You can't login with a password. Please use "${user.provider}" instead.`;
-    if (!this.usersService.checkPw(user, password)) return 'Invalid password';
+    if (!this.usersService.checkPw(user, password)) return "Invalid password";
 
     return user;
   }
@@ -36,21 +36,21 @@ export class AuthService {
     provider,
     providerId,
     password,
-    providerData,
+    providerData
   }: CreateUserArgs) {
     if (password) {
-      provider = 'local';
+      provider = "local";
       providerId = this.usersService.hashPw(password);
     }
     let user = await this.users.findOne({ email });
-    if (user) return 'Email already exists';
+    if (user) return "Email already exists";
 
     user = new this.users({
       email,
       username,
       provider,
       providerId,
-      providerData,
+      providerData
     });
 
     await user.save();
