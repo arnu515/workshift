@@ -1,19 +1,22 @@
+import { PrismaService } from "@/prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { OrganisationInvite, OrganisationInviteModel } from "./invites.schema";
+import type { Prisma } from "@prisma/client";
 
 @Injectable()
 export class InvitesService {
-  constructor(
-    @InjectModel(OrganisationInvite.name)
-    public invites: OrganisationInviteModel
-  ) {}
+  invites: Prisma.OrganisationInvitesDelegate<
+    Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+  >;
+
+  constructor(db: PrismaService) {
+    this.invites = db.organisationInvites;
+  }
 
   getUserInvites(userId: string) {
-    return this.invites.find({ toUser: userId }).exec();
+    return this.invites.findMany({ where: { user_id: userId } });
   }
 
   getOrgInvites(orgId: string) {
-    return this.invites.find({ organisation: orgId }).exec();
+    return this.invites.findMany({ where: { organisation_id: orgId } });
   }
 }

@@ -1,0 +1,58 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["mongoDb"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model OrganisationInvites {
+  id              String @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  v               Int?   @map("__v")
+  organisation_id String @db.ObjectId
+  user_id         String @db.ObjectId
+
+  organisation Organisation @relation(fields: [organisation_id], references: [id])
+  invitedUser  User         @relation(fields: [user_id], references: [id])
+
+  @@map("organisation_invites")
+}
+
+model Organisation {
+  id          String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  v           Int?     @map("__v")
+  description String
+  imageUrl    String
+  member_ids  String[] @db.Array(ObjectId)
+  name        String
+  owner_id    String   @db.ObjectId
+  location    String?
+  email       String?
+  website     String?
+  address     String?
+
+  invites OrganisationInvites[]
+  owner   User                  @relation(name: "owner", fields: [owner_id], references: [id])
+  members User[]                @relation(name: "members", fields: [member_ids])
+
+  @@map("organisations")
+}
+
+model User {
+  id               String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  v                Int?     @map("__v")
+  email            String   @unique(map: "email_1")
+  provider         String
+  providerData     Json?
+  providerId       String
+  username         String
+  organisation_ids String[] @db.Array(ObjectId)
+
+  owned_organisations Organisation[]        @relation(name: "owner")
+  organisations       Organisation[]        @relation(name: "members", fields: [organisation_ids])
+  invites             OrganisationInvites[]
+
+  @@map("users")
+}

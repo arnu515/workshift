@@ -9,7 +9,7 @@ import {
 } from "@nestjs/common";
 import { IsEmail, IsNotEmpty, MaxLength, MinLength } from "class-validator";
 import { AuthService } from "./auth.service";
-import httpError from "http-errors";
+import { httpError } from "@/util";
 import { IsLoggedIn } from "./auth.guard";
 import axios from "axios";
 
@@ -40,11 +40,11 @@ export class AuthController {
       return httpError(400, user);
     }
 
-    session.user = user.toObject();
+    session.user = { ...user };
     session.loggedIn = true;
     session.logInAt = new Date();
 
-    const { providerData: _, ...toReturn } = user.toObject();
+    const { providerData: _, ...toReturn } = user;
     return toReturn;
   }
 
@@ -63,11 +63,11 @@ export class AuthController {
       return httpError(400, user);
     }
 
-    session.user = user.toObject();
+    session.user = { ...user };
     session.loggedIn = true;
     session.logInAt = new Date();
 
-    const { providerData: _, ...toReturn } = user.toObject();
+    const { providerData: _, ...toReturn } = user;
 
     return toReturn;
   }
@@ -103,19 +103,37 @@ export class AuthController {
         session.grant.response.profile.discriminator;
     }
 
-    const user = await this.auth.createUser({
-      email,
-      username,
-      provider: session.grant.provider,
-      providerId: session.grant.response.profile.id.toString(),
-      providerData: session.grant.response
-    });
+    let user = await this.auth.getUser(email);
+    if (!user) {
+      const createdUser = await this.auth.createUser({
+        email,
+        username,
+        provider: session.grant.provider,
+        providerId: session.grant.response.profile.id.toString(),
+        providerData: session.grant.response
+      });
 
-    if (typeof user === "string") {
-      return httpError(400, user);
+      if (typeof createdUser === "string") {
+        return httpError(400, createdUser);
+      }
+
+      user = createdUser;
     }
 
-    const { providerData: _, ...toReturn } = user.toObject();
+    if (user.provider !== session.grant.provider) {
+      return httpError(
+        400,
+        `You can't login with a ${session.grant.provider}. Please use ${
+          user.provider === "local" ? "your password" : `"${user.provider}"`
+        } instead.`
+      );
+    }
+
+    const { providerData: _, ...toReturn } = user;
+
+    session.user = { ...user };
+    session.loggedIn = true;
+    session.logInAt = new Date();
 
     return toReturn;
   }
