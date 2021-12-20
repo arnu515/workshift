@@ -14,15 +14,19 @@
 
 <script lang="ts">
 	import LoginScreen from '$lib/components/LoginScreen.svelte';
+	import Loading from '$lib/components/Loading.svelte';
 	import { user } from '$lib/stores/user';
 	import { toast, SvelteToast, SvelteToastOptions } from '@zerodevx/svelte-toast';
 	import { onMount } from 'svelte';
+	import axios from '$lib/axios';
+	import { stringify, parse } from 'qs';
 	import '../app.css';
 
 	export let status: string;
 	export let message: string;
+	let loading = true;
 
-	onMount(() => {
+	onMount(async () => {
 		console.log(message, status);
 		if (message) {
 			toast.push(message, {
@@ -31,6 +35,19 @@
 				}
 			});
 		}
+
+		// get the user from backend and save it in the store
+		const res = await axios.get('/auth/me');
+		if (res.status.toString().startsWith('2')) {
+			user.set(res.data);
+		}
+		loading = false;
+
+		// remove "status" and "message" from the query string
+		const q = parse(window.location.search.slice(1));
+		delete q.status;
+		delete q.message;
+		window.history.replaceState({}, document.title, `${window.location.pathname}?${stringify(q)}`);
 	});
 
 	const opts: SvelteToastOptions = {
@@ -47,7 +64,9 @@
 
 <SvelteToast options={opts} />
 
-{#if !$user}
+{#if loading}
+	<Loading />
+{:else if !$user}
 	<LoginScreen {status} {message} />
 {:else}
 	<slot />
