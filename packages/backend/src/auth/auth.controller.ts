@@ -6,14 +6,20 @@ import {
   Get,
   UseGuards,
   Delete,
-  Res
+  Res,
+  Inject,
+  Req,
+  Headers
 } from "@nestjs/common";
 import { IsEmail, IsNotEmpty, MaxLength, MinLength } from "class-validator";
 import { AuthService } from "./auth.service";
 import { httpError } from "@/util";
 import { IsLoggedIn } from "./auth.guard";
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import axios from "axios";
+import * as jwt from "@/util/jwt";
+import type { MongoClient } from "mongodb";
+import { PrismaService } from "@/prisma/prisma.service";
 
 class LocalLoginBody {
   @IsEmail()
@@ -33,28 +39,29 @@ class LocalRegisterBody extends LocalLoginBody {
 
 @Controller("auth")
 export class AuthController {
-  constructor(private auth: AuthService) {}
+  constructor(
+    private auth: AuthService,
+    @Inject("Mongo") private mongo: MongoClient,
+    private db: PrismaService
+  ) {}
 
   @Post("local/login")
-  async login(@Body() body: LocalLoginBody, @Session() session: Record<any, any>) {
+  async login(@Body() body: LocalLoginBody) {
     const user = await this.auth.local(body.email, body.password);
     if (typeof user === "string") {
       return httpError(400, user);
     }
 
-    session.user = { ...user };
-    session.loggedIn = true;
-    session.logInAt = new Date();
+    const accessToken = jwt.createAccessToken(user);
+    const refreshToken = await jwt.createRefreshToken(user, this.mongo);
+    if (!refreshToken) return httpError(500, "Failed to create refresh token");
 
-    const { providerData: _, ...toReturn } = user;
-    return toReturn;
+    const { providerData: _, ...serUser } = user;
+    return { user: serUser, tokens: { access: accessToken, refresh: refreshToken } };
   }
 
   @Post("local/register")
-  async register(
-    @Body() body: LocalRegisterBody,
-    @Session() session: Record<any, any>
-  ) {
+  async register(@Body() body: LocalRegisterBody) {
     const user = await this.auth.createUser({
       email: body.email,
       username: body.username,
@@ -65,13 +72,12 @@ export class AuthController {
       return httpError(400, user);
     }
 
-    session.user = { ...user };
-    session.loggedIn = true;
-    session.logInAt = new Date();
+    const accessToken = jwt.createAccessToken(user);
+    const refreshToken = await jwt.createRefreshToken(user, this.mongo);
+    if (!refreshToken) return httpError(500, "Failed to create refresh token");
 
-    const { providerData: _, ...toReturn } = user;
-
-    return toReturn;
+    const { providerData: _, ...serUser } = user;
+    return { user: serUser, tokens: { access: accessToken, refresh: refreshToken } };
   }
 
   @Post("isregistered")
@@ -83,7 +89,7 @@ export class AuthController {
   @Get("callback")
   async oauthCallback(@Session() session: Record<any, any>, @Res() res: Response) {
     function httpError(code: number, message: string) {
-      let url = new URL(process.env.APP_URL!);
+      const url = new URL(process.env.APP_URL!);
       url.searchParams.set("status", code.toString());
       url.searchParams.set("message", message);
       res.redirect(url.toString());
@@ -144,28 +150,39 @@ export class AuthController {
       );
     }
 
-    session.user = { ...user };
-    session.loggedIn = true;
-    session.logInAt = new Date();
+    const accessToken = jwt.createAccessToken(user);
+    const refreshToken = await jwt.createRefreshToken(user, this.mongo);
 
-    return httpError(200, `Logged in using "${session.grant.provider}"`);
+    if (!refreshToken) return httpError(500, "Failed to create refresh token");
+
+    const url = new URL(process.env.APP_URL!);
+    url.searchParams.set("status", "200");
+    url.searchParams.set("message", `Logged in using ${session.grant.provider}`);
+    url.searchParams.set("access", accessToken);
+    url.searchParams.set("refresh", refreshToken);
+    res.redirect(url.toString());
   }
 
   @Get("me")
   @UseGuards(IsLoggedIn)
-  async me(@Session() session: Record<any, any>) {
-    const { providerData: _, ...toReturn } = session.user;
+  async me(@Req() req: Request) {
+    const { providerData: _, ...toReturn } = (req as any).user;
 
     return toReturn;
   }
 
-  @Delete("logout")
-  @UseGuards(IsLoggedIn)
-  async logout(@Session() session: Record<any, any>) {
-    delete session.user;
-    delete session.loggedIn;
-    delete session.logInAt;
+  @Delete("refresh")
+  async logout(@Headers("x-refresh-token") refreshToken: string) {
+    await jwt.blacklistRefreshToken(refreshToken, this.mongo);
+    return { message: "Blacklisted" };
+  }
 
-    return { message: "Logged out" };
+  @Get("refresh")
+  async refresh(@Headers("x-refresh-token") refreshToken: string) {
+    if (!refreshToken) return httpError(401, "Please provide a refresh token");
+    const access = await jwt.refreshToken(refreshToken, this.db, this.mongo);
+    if (!access) return httpError(401, "Invalid refresh token");
+
+    return { access };
   }
 }
