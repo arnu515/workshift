@@ -5,12 +5,14 @@ import {
   Session,
   Get,
   UseGuards,
-  Delete
+  Delete,
+  Res
 } from "@nestjs/common";
 import { IsEmail, IsNotEmpty, MaxLength, MinLength } from "class-validator";
 import { AuthService } from "./auth.service";
 import { httpError } from "@/util";
 import { IsLoggedIn } from "./auth.guard";
+import type { Response } from "express";
 import axios from "axios";
 
 class LocalLoginBody {
@@ -79,7 +81,14 @@ export class AuthController {
   }
 
   @Get("callback")
-  async oauthCallback(@Session() session: Record<any, any>) {
+  async oauthCallback(@Session() session: Record<any, any>, @Res() res: Response) {
+    function httpError(code: number, message: string) {
+      let url = new URL(process.env.APP_URL!);
+      url.searchParams.set("status", code.toString());
+      url.searchParams.set("message", message);
+      res.redirect(url.toString());
+    }
+
     let email, username;
     if (session.grant.provider === "github") {
       try {
@@ -135,13 +144,11 @@ export class AuthController {
       );
     }
 
-    const { providerData: _, ...toReturn } = user;
-
     session.user = { ...user };
     session.loggedIn = true;
     session.logInAt = new Date();
 
-    return toReturn;
+    return httpError(200, `Logged in using "${session.grant.provider}"`);
   }
 
   @Get("me")

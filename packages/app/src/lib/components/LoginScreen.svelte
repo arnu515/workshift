@@ -12,6 +12,9 @@
 		whiteText: boolean;
 	}
 
+	export let status: string | undefined;
+	export let message: string | undefined;
+
 	let email = '',
 		password = '',
 		username = '';
