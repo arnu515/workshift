@@ -72,6 +72,12 @@ export class AuthController {
     return toReturn;
   }
 
+  @Post("isregistered")
+  async isRegistered(@Body() body: { email: string }) {
+    const user = await this.auth.getUser(body.email);
+    return { isRegistered: user ? true : false };
+  }
+
   @Get("callback")
   async oauthCallback(@Session() session: Record<any, any>) {
     let email, username;
