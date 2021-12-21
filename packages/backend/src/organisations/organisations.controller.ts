@@ -25,7 +25,7 @@ export class OrganisationsController {
   @Get("/invites")
   @UseGuards(IsLoggedIn)
   async getUserInvites(@GetUser() user: User) {
-    return await this.invitesService.getUserInvites(user.id);
+    return { invites: await this.invitesService.getUserInvites(user.id) };
   }
 
   @Get("/")
