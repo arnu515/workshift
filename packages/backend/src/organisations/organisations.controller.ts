@@ -28,6 +28,14 @@ export class OrganisationsController {
     return await this.invitesService.getUserInvites(user.id);
   }
 
+  @Get("/")
+  @UseGuards(IsLoggedIn)
+  async getJoinedOrgs(@GetUser() user: User) {
+    return {
+      organisations: await this.organisationsService.getJoinedOrgs(user)
+    };
+  }
+
   @Get(":id")
   async getOrgById(@Param("id") id: string) {
     if (!isMongoId(id)) {

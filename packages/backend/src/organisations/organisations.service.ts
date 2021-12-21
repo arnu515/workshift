@@ -47,6 +47,17 @@ export class CreateOrganisationBody {
 export class OrganisationsService {
   constructor(private db: PrismaService) {}
 
+  getJoinedOrgs(user: User) {
+    return this.db.organisation.findMany({
+      where: {
+        member_ids: { has: user.id }
+      },
+      include: {
+        owner: true
+      }
+    });
+  }
+
   getOrgById(id: string) {
     return this.db.organisation.findFirst({ where: { id }, include: { owner: true } });
   }
