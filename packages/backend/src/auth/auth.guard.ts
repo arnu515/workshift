@@ -4,16 +4,28 @@ import {
   Injectable,
   UnauthorizedException
 } from "@nestjs/common";
+import { PrismaService } from "@/prisma/prisma.service";
 
 @Injectable()
 export class IsLoggedIn implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
-    const session = context.switchToHttp().getRequest().session;
-    if (session.user && session.loggedIn && session.logInAt) {
-      return true;
+  constructor(private db: PrismaService) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const req = context.switchToHttp().getRequest();
+    const session = req.session;
+    if (session.userId && session.loggedIn && session.logInAt) {
+      const user = await this.db.user.findFirst({
+        where: {
+          id: session.userId
+        }
+      });
+      if (user) {
+        req.user = user;
+        return true;
+      }
     }
 
-    delete session.user;
+    delete session.userId;
     delete session.loggedIn;
     delete session.logInAt;
 
