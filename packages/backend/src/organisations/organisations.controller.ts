@@ -191,6 +191,6 @@ export class OrganisationsController {
 
     await this.invitesService.invites.delete({ where: { id: invite.id } });
 
-    return { message: `Invite ${action}ed` };
+    return { message: `Invite ${action === "accept" ? "accepted" : "declined"}` };
   }
 }
