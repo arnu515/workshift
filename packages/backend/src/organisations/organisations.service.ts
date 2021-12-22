@@ -112,13 +112,6 @@ export class OrganisationsService {
     });
   }
 
-  getUserOrgs(userId: string) {
-    return this.db.organisation.findMany({
-      where: { owner_id: userId },
-      include: { owner: true }
-    });
-  }
-
   async addUserToOrg(userId: string, orgId: string) {
     const org = await this.db.organisation.findFirst({
       where: { id: orgId }
