@@ -54,7 +54,7 @@ export class OrganisationsController {
     if (!isMongoId(id)) {
       return httpError(400, "Invalid ID");
     }
-    return { members: await this.organisationsService.getOrgWithMembers(id) };
+    return await this.organisationsService.getOrgWithMembers(id);
   }
 
   @Post("/")
