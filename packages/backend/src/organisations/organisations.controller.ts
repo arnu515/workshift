@@ -32,7 +32,7 @@ export class OrganisationsController {
   @UseGuards(IsLoggedIn)
   async getJoinedOrgs(@GetUser() user: User) {
     return {
-      organisations: await this.organisationsService.getJoinedOrgs(user)
+      organisations: await this.organisationsService.getJoinedOrgs(user.id)
     };
   }
 
@@ -98,7 +98,9 @@ export class OrganisationsController {
       return httpError(400, "This user is the owner of this organisation");
     }
 
-    const invitedUsersOrgs = await this.organisationsService.getUserOrgs(body.userId);
+    const invitedUsersOrgs = await this.organisationsService.getJoinedOrgs(
+      invitedUser.id
+    );
 
     if (!invitedUser) {
       return httpError(404, "User not found");

@@ -47,15 +47,20 @@ export class CreateOrganisationBody {
 export class OrganisationsService {
   constructor(private db: PrismaService) {}
 
-  getJoinedOrgs(user: User) {
-    return this.db.organisation.findMany({
-      where: {
-        member_ids: { has: user.id }
-      },
+  async getJoinedOrgs(userId: string) {
+    const org = await this.db.organisation.findMany({
+      // this doesn't work for some reason
+      // where: {
+      //   member_ids: { has: userId }
+      // },
       include: {
         owner: true
       }
     });
+
+    // i have to manually filter the results. Prisma please fix this
+    // then again, i might be doing something wrong, but i don't know
+    return org.filter(x => x.member_ids.includes(userId));
   }
 
   getOrgById(id: string) {
@@ -111,18 +116,6 @@ export class OrganisationsService {
     return this.db.organisation.findMany({
       where: { owner_id: userId },
       include: { owner: true }
-    });
-  }
-
-  getUserMemberships(userId: string) {
-    // get organisations where the members contains the user's id
-    return this.db.organisation.findMany({
-      where: {
-        member_ids: { has: userId }
-      },
-      include: {
-        owner: true
-      }
     });
   }
 
