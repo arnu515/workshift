@@ -49,6 +49,14 @@ export class OrganisationsController {
     return org;
   }
 
+  @Get(":id/members")
+  async getOrgMembers(@Param("id") id: string) {
+    if (!isMongoId(id)) {
+      return httpError(400, "Invalid ID");
+    }
+    return { members: await this.organisationsService.getOrgWithMembers(id) };
+  }
+
   @Post("/")
   @UseGuards(IsLoggedIn)
   async createOrganisation(

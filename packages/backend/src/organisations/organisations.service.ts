@@ -63,6 +63,15 @@ export class OrganisationsService {
     return org.filter(x => x.member_ids.includes(userId));
   }
 
+  async getOrgWithMembers(orgId: string) {
+    return this.db.organisation.findFirst({
+      where: { id: orgId },
+      include: {
+        members: true
+      }
+    });
+  }
+
   getOrgById(id: string) {
     return this.db.organisation.findFirst({ where: { id }, include: { owner: true } });
   }
