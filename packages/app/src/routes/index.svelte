@@ -7,8 +7,8 @@
   import { toast } from "@zerodevx/svelte-toast";
   import dayjs from "dayjs";
 
-  let timeAtLastOrgRefresh = Date.now();
-  let timeAtLastInvRefresh = Date.now();
+  let timeAtLastOrgRefresh = Date.now() - 1000 * 60;
+  let timeAtLastInvRefresh = Date.now() - 1000 * 60;
 
   onMount(async () => {
     await org.refresh();
