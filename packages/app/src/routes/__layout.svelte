@@ -71,7 +71,7 @@
 {#if loading}
   <Loading />
 {:else if !$user}
-  <LoginScreen {status} {message} />
+  <LoginScreen />
 {:else}
   <Navbar />
   <slot />
