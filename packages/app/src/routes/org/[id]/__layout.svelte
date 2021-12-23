@@ -54,8 +54,6 @@
     await org.refresh();
     await invites.refresh();
   }
-
-  $: console.log($invites);
 </script>
 
 {#if organisation && $user}
