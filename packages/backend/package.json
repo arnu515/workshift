@@ -1,9 +1,9 @@
 {
-  "name": "nest-typescript-starter",
+  "name": "backend",
   "private": true,
-  "version": "1.0.0",
-  "description": "Nest TypeScript starter repository",
-  "license": "MIT",
+  "version": "0.1.0",
+  "description": "Backend for WorkShift",
+  "license": "Apache-2.0",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",

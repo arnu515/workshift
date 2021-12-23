@@ -3,6 +3,7 @@ import {
   Post,
   Body,
   Session,
+  Request,
   Get,
   UseGuards,
   Delete,
@@ -42,7 +43,7 @@ export class AuthController {
       return httpError(400, user);
     }
 
-    session.user = { ...user };
+    session.userId = user.id;
     session.loggedIn = true;
     session.logInAt = new Date();
 
@@ -65,7 +66,7 @@ export class AuthController {
       return httpError(400, user);
     }
 
-    session.user = { ...user };
+    session.userId = user.id;
     session.loggedIn = true;
     session.logInAt = new Date();
 
@@ -83,7 +84,7 @@ export class AuthController {
   @Get("callback")
   async oauthCallback(@Session() session: Record<any, any>, @Res() res: Response) {
     function httpError(code: number, message: string) {
-      let url = new URL(process.env.APP_URL!);
+      const url = new URL(process.env.APP_URL!);
       url.searchParams.set("status", code.toString());
       url.searchParams.set("message", message);
       res.redirect(url.toString());
@@ -144,7 +145,7 @@ export class AuthController {
       );
     }
 
-    session.user = { ...user };
+    session.userId = user.id;
     session.loggedIn = true;
     session.logInAt = new Date();
 
@@ -153,18 +154,19 @@ export class AuthController {
 
   @Get("me")
   @UseGuards(IsLoggedIn)
-  async me(@Session() session: Record<any, any>) {
-    const { providerData: _, ...toReturn } = session.user;
+  async me(@Request() request: any) {
+    const { providerData: _, ...toReturn } = request.user;
 
     return toReturn;
   }
 
   @Delete("logout")
   @UseGuards(IsLoggedIn)
-  async logout(@Session() session: Record<any, any>) {
-    delete session.user;
+  async logout(@Session() session: Record<any, any>, @Request() request: any) {
+    delete session.userId;
     delete session.loggedIn;
     delete session.logInAt;
+    delete request.user;
 
     return { message: "Logged out" };
   }

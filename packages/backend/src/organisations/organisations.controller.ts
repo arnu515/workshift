@@ -1,19 +1,12 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Post,
-  Body,
-  UseGuards,
-  Session,
-  Patch
-} from "@nestjs/common";
+import { Controller, Get, Param, Post, Body, UseGuards, Patch } from "@nestjs/common";
 import { CreateOrganisationBody, OrganisationsService } from "./organisations.service";
 import { IsNotEmpty, IsMongoId, isMongoId } from "class-validator";
 import { IsLoggedIn } from "../auth/auth.guard";
 import { InvitesService } from "./invites/invites.service";
 import { httpError } from "@/util";
 import { PrismaService } from "@/prisma/prisma.service";
+import { GetUser } from "@/auth/user.decorator";
+import type { User } from "@prisma/client";
 
 class InviteToOrganisationBody {
   @IsMongoId({ message: "Invalid user ID" })
@@ -31,9 +24,16 @@ export class OrganisationsController {
 
   @Get("/invites")
   @UseGuards(IsLoggedIn)
-  async getUserInvites(@Session() session: Record<any, any>) {
-    console.log(session.user);
-    return await this.invitesService.getUserInvites(session.user.id);
+  async getUserInvites(@GetUser() user: User) {
+    return { invites: await this.invitesService.getUserInvites(user.id) };
+  }
+
+  @Get("/")
+  @UseGuards(IsLoggedIn)
+  async getJoinedOrgs(@GetUser() user: User) {
+    return {
+      organisations: await this.organisationsService.getJoinedOrgs(user.id)
+    };
   }
 
   @Get(":id")
@@ -49,13 +49,21 @@ export class OrganisationsController {
     return org;
   }
 
+  @Get(":id/members")
+  async getOrgMembers(@Param("id") id: string) {
+    if (!isMongoId(id)) {
+      return httpError(400, "Invalid ID");
+    }
+    return await this.organisationsService.getOrgWithMembers(id);
+  }
+
   @Post("/")
   @UseGuards(IsLoggedIn)
   async createOrganisation(
     @Body() body: CreateOrganisationBody,
-    @Session() session: Record<any, any>
+    @GetUser() user: User
   ) {
-    const org = await this.organisationsService.createOrganisation(body, session.user);
+    const org = await this.organisationsService.createOrganisation(body, user);
 
     if (typeof org === "string") {
       return httpError(400, org);
@@ -68,7 +76,7 @@ export class OrganisationsController {
   @UseGuards(IsLoggedIn)
   async inviteToOrganisation(
     @Body() body: InviteToOrganisationBody,
-    @Session() session: Record<any, any>,
+    @GetUser() user: User,
     @Param("id") id: string
   ) {
     if (!isMongoId(id)) {
@@ -80,7 +88,7 @@ export class OrganisationsController {
       return httpError(404, "Organisation not found");
     }
 
-    if (org.owner_id.toString() !== session.user.id.toString()) {
+    if (org.owner_id.toString() !== user.id.toString()) {
       return httpError(403, "You don't own this organisation");
     }
 
@@ -90,7 +98,7 @@ export class OrganisationsController {
       return httpError(404, "User not found");
     }
 
-    if (invitedUser.id.toString() === session.user.id.toString()) {
+    if (invitedUser.id.toString() === user.id.toString()) {
       return httpError(400, "You can't invite yourself to an organisation");
     }
 
@@ -98,13 +106,15 @@ export class OrganisationsController {
       return httpError(400, "This user is the owner of this organisation");
     }
 
-    const invitedUsersOrgs = await this.organisationsService.getUserOrgs(body.userId);
+    const invitedUsersOrgs = await this.organisationsService.getJoinedOrgs(
+      invitedUser.id
+    );
 
     if (!invitedUser) {
       return httpError(404, "User not found");
     }
 
-    if (invitedUser.id.toString() === session.user.id.toString()) {
+    if (invitedUser.id.toString() === user.id.toString()) {
       return httpError(400, "You can't invite yourself");
     }
 
@@ -135,7 +145,7 @@ export class OrganisationsController {
 
   @Get("/:id/invites")
   @UseGuards(IsLoggedIn)
-  async getOrgInvites(@Param("id") id: string, @Session() session: Record<any, any>) {
+  async getOrgInvites(@Param("id") id: string, @GetUser() user: User) {
     if (!isMongoId(id)) {
       return httpError(400, "Invalid ID");
     }
@@ -145,7 +155,7 @@ export class OrganisationsController {
       return httpError(404, "Organisation not found");
     }
 
-    if (org.owner_id !== session.user.id.toString()) {
+    if (org.owner_id !== user.id.toString()) {
       return httpError(403, "You don't own this organisation");
     }
 
@@ -158,7 +168,7 @@ export class OrganisationsController {
     @Body("action") action: string,
     @Param("id") id: string,
     @Param("inviteId") inviteId: string,
-    @Session() session: Record<any, any>
+    @GetUser() user: User
   ) {
     if (!["accept", "decline"].includes(action)) {
       return httpError(400, "Invalid action");
@@ -178,7 +188,7 @@ export class OrganisationsController {
       return httpError(400, "This invite does not belong to this organisation");
     }
 
-    if (invite.user_id !== session.user.id.toString()) {
+    if (invite.user_id !== user.id.toString()) {
       return httpError(403, "This invite does not belong to you");
     }
 
@@ -191,6 +201,6 @@ export class OrganisationsController {
 
     await this.invitesService.invites.delete({ where: { id: invite.id } });
 
-    return { message: `Invite ${action}ed` };
+    return { message: `Invite ${action === "accept" ? "accepted" : "declined"}` };
   }
 }
