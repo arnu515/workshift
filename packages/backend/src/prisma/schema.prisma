@@ -47,6 +47,7 @@ model User {
   id               String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
   v                Int?     @map("__v")
   email            String   @unique(map: "email_1")
+  avatarUrl        String   @default("https://www.gravatar.com/avatar/00000000000000000000000000000000.png?d=mp&s=64")
   provider         String
   providerData     Json?
   providerId       String
