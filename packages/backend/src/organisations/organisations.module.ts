@@ -3,9 +3,10 @@ import { OrganisationsController } from "./organisations.controller";
 import { OrganisationsService } from "./organisations.service";
 import { InvitesModule } from "./invites/invites.module";
 import { PrismaModule } from "@/prisma/prisma.module";
+import { ChannelsModule } from "./channels/channels.module";
 
 @Module({
-  imports: [InvitesModule, PrismaModule],
+  imports: [InvitesModule, PrismaModule, ChannelsModule],
   controllers: [OrganisationsController],
   providers: [OrganisationsService]
 })
