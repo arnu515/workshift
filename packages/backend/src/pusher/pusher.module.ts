@@ -1,5 +1,5 @@
-import { Module } from '@nestjs/common';
-import { PusherService } from './pusher.service';
+import { Module } from "@nestjs/common";
+import { PusherService } from "./pusher.service";
 
 @Module({
   providers: [PusherService]
