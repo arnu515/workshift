@@ -47,7 +47,7 @@ model User {
   id               String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
   v                Int?     @map("__v")
   email            String   @unique(map: "email_1")
-  avatarUrl        String   @default("https://www.gravatar.com/avatar/00000000000000000000000000000000.png?d=mp&s=64")
+  avatarUrl        String   @default("https://stitch-statichosting-prod.s3.amazonaws.com/61c56c6dd4ab64500d8390a3/5e7c88809e929860b20b42d9/images/avatar/default.jpeg")
   provider         String
   providerData     Json?
   providerId       String
