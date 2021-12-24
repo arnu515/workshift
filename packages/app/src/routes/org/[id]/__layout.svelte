@@ -59,7 +59,9 @@
 {#if organisation && $user}
   {#if organisation.member_ids?.includes($user.id)}
     <Sidebar {organisation} activePath={path.split("/").pop()} />
-    <slot />
+    <main class="ml-16">
+      <slot />
+    </main>
   {:else}
     <div class="my-6 mx-auto max-w-[950px]">
       <OrgCard {organisation} />
