@@ -6,7 +6,8 @@ import {
   Body,
   UseGuards,
   Patch,
-  Put
+  Put,
+  Delete
 } from "@nestjs/common";
 import {
   CreateOrganisationBody,
@@ -202,6 +203,42 @@ export class OrganisationsController {
     }
 
     return { invites: await this.invitesService.getOrgInvites(id) };
+  }
+
+  @Delete("/:id/invites/:inviteId")
+  @UseGuards(IsLoggedIn)
+  async cancelInvite(
+    @Param("id") id: string,
+    @Param("inviteId") inviteId: string,
+    @GetUser() user: User
+  ) {
+    if (!isMongoId(id)) {
+      return httpError(400, "Invalid ID");
+    }
+
+    const org = await this.organisationsService.getOrgById(id);
+
+    if (!org) {
+      return httpError(404, "Organisation not found");
+    }
+
+    if (org.owner_id !== user.id.toString()) {
+      return httpError(403, "You don't own this organisation");
+    }
+
+    const invite = await this.invitesService.invites.findFirst({
+      where: {
+        id: inviteId
+      }
+    });
+
+    if (!invite) {
+      return httpError(404, "Invite not found");
+    }
+
+    await this.invitesService.invites.delete({ where: { id: invite.id } });
+
+    return { org, invite };
   }
 
   @Patch("/:id/invites/:inviteId")
