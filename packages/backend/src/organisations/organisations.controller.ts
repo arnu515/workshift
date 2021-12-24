@@ -1,5 +1,18 @@
-import { Controller, Get, Param, Post, Body, UseGuards, Patch } from "@nestjs/common";
-import { CreateOrganisationBody, OrganisationsService } from "./organisations.service";
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Body,
+  UseGuards,
+  Patch,
+  Put
+} from "@nestjs/common";
+import {
+  CreateOrganisationBody,
+  OrganisationsService,
+  UpdateOrganisationBody
+} from "./organisations.service";
 import { IsNotEmpty, IsMongoId, isMongoId } from "class-validator";
 import { IsLoggedIn } from "../auth/auth.guard";
 import { InvitesService } from "./invites/invites.service";
@@ -70,6 +83,35 @@ export class OrganisationsController {
     }
 
     return org;
+  }
+
+  @Put("/:id")
+  @UseGuards(IsLoggedIn)
+  async updateOrganisation(
+    @Param("id") orgId: string,
+    @Body() body: UpdateOrganisationBody,
+    @GetUser() user: User
+  ) {
+    if (!isMongoId(orgId)) {
+      return httpError(400, "Invalid ID");
+    }
+
+    const org = await this.organisationsService.getOrgById(orgId);
+    if (!org) {
+      return httpError(404, "Organisation not found");
+    }
+
+    if (org.owner_id !== user.id.toString()) {
+      return httpError(403, "You don't own this organisation");
+    }
+
+    const updatedOrg = await this.organisationsService.updateOrganisation(orgId, body);
+
+    if (typeof updatedOrg === "string") {
+      return httpError(400, updatedOrg);
+    }
+
+    return updatedOrg;
   }
 
   @Post("/:id/invites")

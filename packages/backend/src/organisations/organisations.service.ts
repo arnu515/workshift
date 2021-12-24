@@ -43,6 +43,41 @@ export class CreateOrganisationBody {
   email?: string;
 }
 
+export class UpdateOrganisationBody {
+  @MinLength(4)
+  @MaxLength(128)
+  @IsNotEmpty()
+  @IsOptional()
+  name?: string;
+
+  @MinLength(4)
+  @MaxLength(2048)
+  @IsNotEmpty()
+  @IsOptional()
+  description?: string;
+
+  @IsUrl({ require_protocol: true })
+  @IsNotEmpty()
+  @IsOptional()
+  imageUrl?: string;
+
+  @IsOptional()
+  @IsUrl({ require_protocol: true })
+  website?: string;
+
+  @IsOptional()
+  @MaxLength(2048)
+  address?: string;
+
+  @IsOptional()
+  @MaxLength(2048)
+  location?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+}
+
 @Injectable()
 export class OrganisationsService {
   constructor(private db: PrismaService) {}
@@ -79,8 +114,12 @@ export class OrganisationsService {
   async createOrganisation(body: CreateOrganisationBody, owner: User) {
     // check that imageUrl is a url from Imgur or Gravatar
     const imageUrl = new URL(body.imageUrl);
-    if (imageUrl.hostname !== "i.imgur.com" && imageUrl.hostname !== "gravatar.com") {
-      return "Image URL must be from either Imgur or Gravatar";
+    if (
+      !["i.imgur.com", "gravatar.com", "assets.workshift.gq"].includes(
+        imageUrl.hostname
+      )
+    ) {
+      return "Image URL must be from either Imgur or Gravatar or be locally hosted";
     }
 
     // check that imageUrl resolves to a valid image
@@ -117,6 +156,60 @@ export class OrganisationsService {
         ...body,
         owner_id: owner.id,
         member_ids: [owner.id]
+      }
+    });
+  }
+
+  async updateOrganisation(orgId: string, body: UpdateOrganisationBody) {
+    if (body.imageUrl) {
+      // check that imageUrl is a url from Imgur or Gravatar
+      const imageUrl = new URL(body.imageUrl);
+      if (
+        !["i.imgur.com", "gravatar.com", "assets.workshift.gq"].includes(
+          imageUrl.hostname
+        )
+      ) {
+        return "Image URL must be from either Imgur or Gravatar or be locally hosted";
+      }
+
+      // check that imageUrl resolves to a valid image
+      try {
+        const res = await axios.get(body.imageUrl);
+        if (res.status !== 200) {
+          return "Image URL must resolve to a valid image";
+        }
+        if (
+          !["image/png", "image/jpeg", "image/jpg"].includes(
+            res.headers["content-type"]
+          )
+        ) {
+          return "Image URL should be a PNG or JPG image";
+        }
+      } catch (err) {
+        return "Image URL must resolve to a valid image";
+      }
+    }
+
+    if (body.location && body.location.split(",").length > 2) {
+      return 'Location format should be "City, Country" or "Country"';
+    }
+
+    // trim every string in body
+    Object.keys(body).forEach(x => {
+      const key = x as keyof typeof body;
+      if (typeof body[key] === "string") {
+        // I genuinely do not know why I have to cast this to never.
+        // If you're good at typescript, and know a fix, please PR it up!
+        body[key] = body[key]!.toString().trim() as never;
+      }
+    });
+
+    return await this.db.organisation.update({
+      where: {
+        id: orgId
+      },
+      data: {
+        ...body
       }
     });
   }
