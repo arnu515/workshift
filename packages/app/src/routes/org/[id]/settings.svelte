@@ -141,27 +141,3 @@
     </div>
   </form>
 </div>
-
-<style lang="postcss">
-  label {
-    @apply block font-bold text-lg mb-1;
-  }
-
-  input,
-  textarea {
-    @apply rounded border border-gray-400 px-2 py-2 outline-none w-full focus:border-gray-600;
-  }
-
-  input.loading {
-    @apply bg-gray-200 cursor-not-allowed;
-  }
-
-  button[type="submit"] {
-    @apply bg-blue-500 text-white border border-blue-500 rounded px-4 py-2 cursor-pointer w-full;
-  }
-
-  button[type="submit"].loading {
-    @apply cursor-not-allowed;
-  }
-</style>
-
