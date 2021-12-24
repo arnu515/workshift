@@ -74,7 +74,7 @@
       </div>
       <div class="mt-2 mb-4">
         <button type="submit" class:loading disabled={loading}
-          >Create organisation</button
+          >{loading ? "..." : "Create organisation"}</button
         >
       </div>
     </form>
