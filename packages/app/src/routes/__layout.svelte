@@ -83,5 +83,7 @@
   <LoginScreen />
 {:else}
   <Navbar />
-  <slot />
+  <div class="mt-[44px]">
+    <slot />
+  </div>
 {/if}
