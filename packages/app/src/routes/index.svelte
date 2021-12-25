@@ -299,7 +299,7 @@
           </article>
         {/each}
       {:else}
-        <p class="text-xl my-2">You're not part of an organisation yet.</p>
+        <p class="text-xl my-2">You don't have any pending invites.</p>
       {/if}
     </section>
   {/if}
