@@ -1,7 +1,7 @@
 import { user } from "$lib/stores/user";
 
 export function getMessage(res: {
-  data: { message: string | string[] };
+  data: { message?: string | string[]; error?: string };
   status: number;
 }): string {
   const { data, status } = res;
@@ -9,5 +9,7 @@ export function getMessage(res: {
   if (Array.isArray(data.message)) {
     return data.message.join("\n");
   }
-  return data.message;
+  if (data.message) return data.message;
+  if (data.error) return data.error;
+  return "An unknown error occurred";
 }
