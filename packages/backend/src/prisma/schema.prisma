@@ -51,7 +51,7 @@ model User {
   provider         String
   providerData     Json?
   providerId       String
-  username         String
+  username         String   @unique(map: "username_1")
   organisation_ids String[] @db.Array(ObjectId)
   created_at       DateTime @default(now())
 
