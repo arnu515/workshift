@@ -8,7 +8,7 @@
 
 <aside class="h-full fixed w-16 bg-gray-300 border-r border-gray-400 flex flex-col">
   <a
-    href="/org/{organisation.id}/chat"
+    href="/org/{organisation.id}/chats"
     class="item group"
     title="Chat"
     aria-label="Chat"
