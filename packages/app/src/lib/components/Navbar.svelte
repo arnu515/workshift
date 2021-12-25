@@ -1,4 +1,6 @@
-<nav class="bg-primary flex items-center justify-between text-white">
+<nav
+  class="bg-primary flex items-center justify-between text-white fixed top-0 left-0 w-full"
+>
   <a class="logo px-4 py-2" href="/">WorkShift</a>
   <div class="nav">
     <a title="Home" aria-label="Home" href="/" class="nav-link"

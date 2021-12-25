@@ -52,6 +52,15 @@
       document.title,
       `${window.location.pathname}?${stringify(q)}`
     );
+
+    const Pusher = (await import("pusher-js")).default;
+    const pusher = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY.toString(), {
+      cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER.toString()
+    });
+    const channel = pusher.subscribe("my-channel");
+    channel.bind("my-event", data => {
+      console.log(data);
+    });
   });
 
   const opts: SvelteToastOptions = {
@@ -74,5 +83,7 @@
   <LoginScreen />
 {:else}
   <Navbar />
-  <slot />
+  <div class="mt-[44px]">
+    <slot />
+  </div>
 {/if}

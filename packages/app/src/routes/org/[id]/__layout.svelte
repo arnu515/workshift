@@ -54,14 +54,14 @@
     await org.refresh();
     await invites.refresh();
   }
-
-  $: console.log($invites);
 </script>
 
 {#if organisation && $user}
   {#if organisation.member_ids?.includes($user.id)}
-    <Sidebar orgId={organisation.id} activePath={path.split("/").pop()} />
-    <slot />
+    <Sidebar {organisation} activePath={path.split("/").pop()} />
+    <main class="ml-16">
+      <slot />
+    </main>
   {:else}
     <div class="my-6 mx-auto max-w-[950px]">
       <OrgCard {organisation} />

@@ -1,11 +1,14 @@
 <script lang="ts">
-  export let orgId: string;
+  import { user } from "$lib/stores/user";
+  import type { Organisation } from "@prisma/client";
+
+  export let organisation: Organisation;
   export let activePath: string;
 </script>
 
 <aside class="h-full fixed w-16 bg-gray-300 border-r border-gray-400 flex flex-col">
   <a
-    href="/org/{orgId}/chat"
+    href="/org/{organisation.id}/chats"
     class="item group"
     title="Chat"
     aria-label="Chat"
@@ -27,7 +30,7 @@
     </svg>
   </a>
   <a
-    href="/org/{orgId}/dm"
+    href="/org/{organisation.id}/dm"
     class="item group"
     title="Direct Messages"
     aria-label="Direct Messages"
@@ -49,7 +52,7 @@
     </svg>
   </a>
   <a
-    href="/org/{orgId}/shifts"
+    href="/org/{organisation.id}/shifts"
     class="item group"
     title="Shifts"
     aria-label="Shifts"
@@ -70,6 +73,58 @@
       />
     </svg>
   </a>
+  {#if organisation.owner_id === $user.id}
+    <a
+      href="/org/{organisation.id}/invite"
+      class="item group"
+      title="Invite User"
+      aria-label="Invite User"
+      class:active={activePath === "invite"}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+        />
+      </svg>
+    </a>
+    <a
+      href="/org/{organisation.id}/settings"
+      class="item group"
+      title="Settings"
+      aria-label="Settings"
+      class:active={activePath === "settings"}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+        />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+        />
+      </svg>
+    </a>
+  {/if}
 </aside>
 
 <style lang="postcss">

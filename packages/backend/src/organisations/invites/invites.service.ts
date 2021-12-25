@@ -20,6 +20,9 @@ export class InvitesService {
   }
 
   getOrgInvites(orgId: string) {
-    return this.invites.findMany({ where: { organisation_id: orgId } });
+    return this.invites.findMany({
+      where: { organisation_id: orgId },
+      include: { invitedUser: true }
+    });
   }
 }

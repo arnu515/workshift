@@ -9,11 +9,11 @@ datasource db {
 }
 
 model OrganisationInvites {
-  id              String @id @default(dbgenerated()) @map("_id") @db.ObjectId
-  v               Int?   @map("__v")
-  organisation_id String @db.ObjectId
-  user_id         String @db.ObjectId
-  created_at     DateTime @default(now())
+  id              String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  v               Int?     @map("__v")
+  organisation_id String   @db.ObjectId
+  user_id         String   @db.ObjectId
+  created_at      DateTime @default(now())
 
   organisation Organisation @relation(fields: [organisation_id], references: [id])
   invitedUser  User         @relation(fields: [user_id], references: [id])
@@ -33,11 +33,12 @@ model Organisation {
   email       String?
   website     String?
   address     String?
-  created_at     DateTime @default(now())
+  created_at  DateTime @default(now())
 
-  invites OrganisationInvites[]
-  owner   User                  @relation(name: "owner", fields: [owner_id], references: [id])
-  members User[]                @relation(name: "members", fields: [member_ids])
+  invites  OrganisationInvites[]
+  owner    User                  @relation(name: "owner", fields: [owner_id], references: [id])
+  members  User[]                @relation(name: "members", fields: [member_ids])
+  channels ChatChannels[]
 
   @@map("organisations")
 }
@@ -46,16 +47,35 @@ model User {
   id               String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
   v                Int?     @map("__v")
   email            String   @unique(map: "email_1")
+  avatarUrl        String   @default("https://www.gravatar.com/avatar/00000000000000000000000000000000.png?d=mp&s=64")
   provider         String
   providerData     Json?
   providerId       String
-  username         String
+  username         String   @unique(map: "username_1")
   organisation_ids String[] @db.Array(ObjectId)
-  created_at     DateTime @default(now())
+  created_at       DateTime @default(now())
 
   owned_organisations Organisation[]        @relation(name: "owner")
   organisations       Organisation[]        @relation(name: "members", fields: [organisation_ids])
   invites             OrganisationInvites[]
+  created_channels    ChatChannels[]
 
   @@map("users")
+}
+
+model ChatChannels {
+  id              String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  v               Int?     @map("__v")
+  organisation_id String   @db.ObjectId
+  created_at      DateTime @default(now())
+  is_encrypted    Boolean  @default(false)
+  password        String?
+  name            String
+  description     String?
+  owner_id        String   @db.ObjectId
+
+  organisation Organisation @relation(fields: [organisation_id], references: [id])
+  owner        User         @relation(fields: [owner_id], references: [id])
+
+  @@map("chat_channels")
 }
