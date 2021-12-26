@@ -59,6 +59,7 @@ model User {
   organisations       Organisation[]        @relation(name: "members", fields: [organisation_ids])
   invites             OrganisationInvites[]
   created_channels    ChatChannels[]
+  messages     ChatMessages[]
 
   @@map("users")
 }
@@ -76,6 +77,23 @@ model ChatChannels {
 
   organisation Organisation @relation(fields: [organisation_id], references: [id])
   owner        User         @relation(fields: [owner_id], references: [id])
+  messages     ChatMessages[]
 
   @@map("chat_channels")
+}
+
+model ChatMessages {
+  id              String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  v               Int?     @map("__v")
+  channel_id      String   @db.ObjectId
+  user_id         String   @db.ObjectId
+  created_at      DateTime @default(now())
+  type            String  // "text" | "file" | "system"
+  content         String
+  is_encrypted    Boolean  @default(false)
+
+  channel ChatChannels @relation(fields: [channel_id], references: [id])
+  user    User?         @relation(fields: [user_id], references: [id])
+
+  @@map("chat_messages")
 }
