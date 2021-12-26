@@ -15,6 +15,7 @@ import { GetUser } from "@/auth/user.decorator";
 import { MaxLength, MinLength, IsOptional } from "class-validator";
 import { httpError } from "@/util";
 import { User } from "@prisma/client";
+import { hashSync, genSaltSync } from "bcryptjs";
 
 class CreateChannelBody {
   @MaxLength(64)
@@ -25,7 +26,8 @@ class CreateChannelBody {
   @MaxLength(256)
   description?: string;
 
-  is_encrypted: boolean;
+  @IsOptional()
+  is_encrypted?: boolean;
 
   @IsOptional()
   password?: string;
@@ -120,6 +122,7 @@ export class ChannelsController {
     @Body() body: CreateChannelBody,
     @GetUser() user: User
   ) {
+    console.log(body.is_encrypted, body);
     if (body.is_encrypted && !body.password) {
       return httpError(400, "Password is required when channel is encrypted");
     }
@@ -138,14 +141,14 @@ export class ChannelsController {
       return httpError(404, "Channel not found");
     }
 
-    if (channel.owner_id !== user.id || org.owner_id !== user.id) {
+    if (channel.owner_id !== user.id && org.owner_id !== user.id) {
       return httpError(403, "You are not the owner of this channel");
     }
 
     if (body.name) channel.name = body.name;
     if (body.description) channel.description = body.description;
-    if (body.is_encrypted !== null) channel.is_encrypted = body.is_encrypted;
-    if (body.password) channel.password = body.password;
+    if (body.is_encrypted !== undefined) channel.is_encrypted = body.is_encrypted;
+    if (body.password) channel.password = hashSync(body.password, genSaltSync(12));
 
     return await this.channels.db.chatChannels.update({
       where: {
@@ -184,7 +187,7 @@ export class ChannelsController {
       return httpError(404, "Channel not found");
     }
 
-    if (channel.owner_id !== user.id || org.owner_id !== user.id) {
+    if (channel.owner_id !== user.id && org.owner_id !== user.id) {
       return httpError(403, "You are not the owner of this channel");
     }
 
