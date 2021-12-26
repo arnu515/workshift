@@ -6,7 +6,8 @@ import {
   Param,
   Post,
   Put,
-  UseGuards
+  UseGuards,
+  Query
 } from "@nestjs/common";
 import { ChannelsService } from "./channels.service";
 import { OrganisationsService } from "../organisations.service";
@@ -15,7 +16,8 @@ import { GetUser } from "@/auth/user.decorator";
 import { MaxLength, MinLength, IsOptional } from "class-validator";
 import { httpError } from "@/util";
 import { User } from "@prisma/client";
-import { hashSync, genSaltSync } from "bcryptjs";
+import sanitize from "sanitize-html";
+import { marked } from "marked";
 
 class CreateChannelBody {
   @MaxLength(64)
@@ -25,12 +27,6 @@ class CreateChannelBody {
   @IsOptional()
   @MaxLength(256)
   description?: string;
-
-  @IsOptional()
-  is_encrypted?: boolean;
-
-  @IsOptional()
-  password?: string;
 }
 
 @Controller("/organisations/:orgId/channels")
@@ -42,7 +38,7 @@ export class ChannelsController {
 
   @Get()
   @UseGuards(IsLoggedIn)
-  async getAllChannels(@Param("orgId") orgId: string, @GetUser() user: any) {
+  async getAllChannels(@Param("orgId") orgId: string, @GetUser() user: User) {
     const org = await this.organisations.getOrgById(orgId);
     if (!org) {
       return httpError(404, "Organisation not found");
@@ -59,7 +55,7 @@ export class ChannelsController {
   async getChannel(
     @Param("orgId") orgId: string,
     @Param("channelId") channelId: string,
-    @GetUser() user: any
+    @GetUser() user: User
   ) {
     const org = await this.organisations.getOrgById(orgId);
     if (!org) {
@@ -77,12 +73,8 @@ export class ChannelsController {
   async createChannel(
     @Param("orgId") orgId: string,
     @Body() body: CreateChannelBody,
-    @GetUser() user: any
+    @GetUser() user: User
   ) {
-    if (body.is_encrypted && !body.password) {
-      return httpError(400, "Password is required when channel is encrypted");
-    }
-
     const org = await this.organisations.getOrgById(orgId);
     if (!org) {
       return httpError(404, "Organisation not found");
@@ -95,8 +87,6 @@ export class ChannelsController {
       data: {
         name: body.name,
         description: body.description,
-        is_encrypted: body.is_encrypted || false,
-        password: body.password,
         owner: {
           connect: {
             id: user.id
@@ -122,11 +112,6 @@ export class ChannelsController {
     @Body() body: CreateChannelBody,
     @GetUser() user: User
   ) {
-    console.log(body.is_encrypted, body);
-    if (body.is_encrypted && !body.password) {
-      return httpError(400, "Password is required when channel is encrypted");
-    }
-
     const org = await this.organisations.getOrgById(orgId);
     if (!org) {
       return httpError(404, "Organisation not found");
@@ -147,8 +132,6 @@ export class ChannelsController {
 
     if (body.name) channel.name = body.name;
     if (body.description) channel.description = body.description;
-    if (body.is_encrypted !== undefined) channel.is_encrypted = body.is_encrypted;
-    if (body.password) channel.password = hashSync(body.password, genSaltSync(12));
 
     return await this.channels.db.chatChannels.update({
       where: {
@@ -194,6 +177,109 @@ export class ChannelsController {
     return await this.channels.db.chatChannels.delete({
       where: {
         id: channelId
+      }
+    });
+  }
+
+  @Get(":channelId/messages")
+  @UseGuards(IsLoggedIn)
+  async getMessages(
+    @Param("orgId") orgId: string,
+    @Param("channelId") channelId: string,
+    @GetUser() user: User,
+    @Query("skip") skip?: number,
+    @Query("take") take?: number
+  ) {
+    const org = await this.organisations.getOrgById(orgId);
+    if (!org) {
+      return httpError(404, "Organisation not found");
+    }
+    if (!org.member_ids.includes(user.id)) {
+      return httpError(403, "You are not a member of this organisation");
+    }
+
+    if (!skip) skip = 0;
+    if (!take) take = 100;
+    const messages = await this.channels.getMessages(channelId, skip, take);
+    if (!messages) {
+      return httpError(404, "Channel not found");
+    }
+    return { messages };
+  }
+
+  @Post(":channelId/messages/text")
+  @UseGuards(IsLoggedIn)
+  async createMessage(
+    @Param("orgId") orgId: string,
+    @Param("channelId") channelId: string,
+    @Body("text") text: string,
+    @GetUser() user: User
+  ) {
+    const org = await this.organisations.getOrgById(orgId);
+    if (!org) {
+      return httpError(404, "Organisation not found");
+    }
+    if (!org.member_ids.includes(user.id)) {
+      return httpError(403, "You are not a member of this organisation");
+    }
+
+    const channel = await this.channels.getChannel(channelId);
+    if (!channel) {
+      return httpError(404, "Channel not found");
+    }
+
+    text = text?.trim();
+    if (!text || typeof text !== "string") {
+      return httpError(400, "Message text is required");
+    }
+    if (text.length > 2048) {
+      return httpError(400, "A message cannot be longer than 2048 characters");
+    }
+
+    text = sanitize(marked(text), {
+      allowedTags: [
+        "a",
+        "p",
+        "b",
+        "i",
+        "strong",
+        "em",
+        "del",
+        "ins",
+        "br",
+        "sup",
+        "sub",
+        "code",
+        "pre",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "span",
+        "small",
+        "mark",
+        "kbd",
+        "ul",
+        "ol",
+        "li"
+      ],
+      allowedAttributes: {
+        a: ["href", "target"],
+        p: ["style", "class"],
+        span: ["style", "class"]
+      }
+    })
+      .trim()
+      .replace(/\n/g, "<br>");
+
+    return await this.channels.db.chatMessages.create({
+      data: {
+        user: { connect: { id: user.id } },
+        type: "text",
+        content: text,
+        channel: { connect: { id: channelId } }
       }
     });
   }

@@ -36,4 +36,17 @@ export class ChannelsService {
       }
     });
   }
+
+  async getMessages(channelId: string, skip = 0, take = 100) {
+    const channel = await this.getChannel(channelId);
+    if (!channel) return null;
+
+    return this.db.chatMessages.findMany({
+      skip,
+      take,
+      where: {
+        channel_id: channelId
+      }
+    });
+  }
 }
