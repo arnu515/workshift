@@ -69,8 +69,6 @@ model ChatChannels {
   v               Int?     @map("__v")
   organisation_id String   @db.ObjectId
   created_at      DateTime @default(now())
-  is_encrypted    Boolean  @default(false)
-  password        String?
   name            String
   description     String?
   owner_id        String   @db.ObjectId
