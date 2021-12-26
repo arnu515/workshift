@@ -49,7 +49,7 @@ export class ChannelsController {
       return httpError(403, "You are not a member of this organisation");
     }
 
-    return await this.channels.getAllChannels(orgId);
+    return { channels: await this.channels.getAllChannels(orgId) };
   }
 
   @Get(":channelId")
