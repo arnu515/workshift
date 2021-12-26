@@ -139,9 +139,7 @@ export class ChannelsController {
       },
       data: {
         name: channel.name,
-        description: channel.description,
-        is_encrypted: channel.is_encrypted,
-        password: channel.password
+        description: channel.description
       },
       include: {
         owner: true
@@ -209,7 +207,7 @@ export class ChannelsController {
 
   @Post(":channelId/messages/text")
   @UseGuards(IsLoggedIn)
-  async createMessage(
+  async createTextMessage(
     @Param("orgId") orgId: string,
     @Param("channelId") channelId: string,
     @Body("text") text: string,
@@ -280,6 +278,142 @@ export class ChannelsController {
         type: "text",
         content: text,
         channel: { connect: { id: channelId } }
+      }
+    });
+  }
+
+  @Put(":channelId/messages/text/:messageId")
+  @UseGuards(IsLoggedIn)
+  async updateTextMessage(
+    @Param("orgId") orgId: string,
+    @Param("channelId") channelId: string,
+    @Param("messageId") messageId: string,
+    @Body("text") text: string,
+    @GetUser() user: User
+  ) {
+    const org = await this.organisations.getOrgById(orgId);
+    if (!org) {
+      return httpError(404, "Organisation not found");
+    }
+    if (!org.member_ids.includes(user.id)) {
+      return httpError(403, "You are not a member of this organisation");
+    }
+
+    const channel = await this.channels.getChannel(channelId);
+    if (!channel) {
+      return httpError(404, "Channel not found");
+    }
+
+    const message = await this.channels.db.chatMessages.findFirst({
+      where: {
+        id: messageId
+      }
+    });
+    if (!message) {
+      return httpError(404, "Message not found");
+    }
+
+    if (message.user_id !== user.id) {
+      return httpError(403, "You are not the owner of this message");
+    }
+
+    if (message.type !== "text") {
+      return httpError(400, "This message is not a text message");
+    }
+
+    text = text?.trim();
+    if (!text || typeof text !== "string") {
+      return httpError(400, "Message text is required");
+    }
+    if (text.length > 2048) {
+      return httpError(400, "A message cannot be longer than 2048 characters");
+    }
+
+    text = sanitize(marked(text), {
+      allowedTags: [
+        "a",
+        "p",
+        "b",
+        "i",
+        "strong",
+        "em",
+        "del",
+        "ins",
+        "br",
+        "sup",
+        "sub",
+        "code",
+        "pre",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "span",
+        "small",
+        "mark",
+        "kbd",
+        "ul",
+        "ol",
+        "li"
+      ],
+      allowedAttributes: {
+        a: ["href", "target"],
+        p: ["style", "class"],
+        span: ["style", "class"]
+      }
+    })
+      .trim()
+      .replace(/\n/g, "<br>");
+
+    return await this.channels.db.chatMessages.update({
+      data: {
+        content: text
+      },
+      where: {
+        id: messageId
+      }
+    });
+  }
+
+  @Delete(":channelId/messages/text/:messageId")
+  @UseGuards(IsLoggedIn)
+  async deleteTextMessage(
+    @Param("orgId") orgId: string,
+    @Param("channelId") channelId: string,
+    @Param("messageId") messageId: string,
+    @GetUser() user: User
+  ) {
+    const org = await this.organisations.getOrgById(orgId);
+    if (!org) {
+      return httpError(404, "Organisation not found");
+    }
+    if (!org.member_ids.includes(user.id)) {
+      return httpError(403, "You are not a member of this organisation");
+    }
+
+    const channel = await this.channels.getChannel(channelId);
+    if (!channel) {
+      return httpError(404, "Channel not found");
+    }
+
+    const message = await this.channels.db.chatMessages.findFirst({
+      where: {
+        id: messageId
+      }
+    });
+    if (!message) {
+      return httpError(404, "Message not found");
+    }
+
+    if (message.user_id !== user.id) {
+      return httpError(403, "You are not the owner of this message");
+    }
+
+    return await this.channels.db.chatMessages.delete({
+      where: {
+        id: messageId
       }
     });
   }
