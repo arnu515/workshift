@@ -7,8 +7,11 @@ import {
   Post,
   Put,
   UseGuards,
-  Query
+  Query,
+  UploadedFile,
+  UseInterceptors
 } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { ChannelsService } from "./channels.service";
 import { OrganisationsService } from "../organisations.service";
 import { IsLoggedIn } from "@/auth/auth.guard";
@@ -17,7 +20,11 @@ import { MaxLength, MinLength, IsOptional } from "class-validator";
 import { httpError } from "@/util";
 import { User } from "@prisma/client";
 import sanitize from "sanitize-html";
+import { B2Service } from "@/b2/b2.service";
 import { marked } from "marked";
+import slugify from "slugify";
+import nanoid from "nanoid";
+import type { Express } from "express";
 
 class CreateChannelBody {
   @MaxLength(64)
@@ -33,7 +40,8 @@ class CreateChannelBody {
 export class ChannelsController {
   constructor(
     private channels: ChannelsService,
-    private organisations: OrganisationsService
+    private organisations: OrganisationsService,
+    private b2: B2Service
   ) {}
 
   @Get()
@@ -410,6 +418,127 @@ export class ChannelsController {
     if (message.user_id !== user.id) {
       return httpError(403, "You are not the owner of this message");
     }
+
+    return await this.channels.db.chatMessages.delete({
+      where: {
+        id: messageId
+      }
+    });
+  }
+
+  @UseInterceptors(FileInterceptor("file"))
+  @Post(":channelId/messages/file")
+  @UseGuards(IsLoggedIn)
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Param("orgId") orgId: string,
+    @Param("channelId") channelId: string,
+    @GetUser() user: User
+  ) {
+    const org = await this.organisations.getOrgById(orgId);
+    if (!org) {
+      return httpError(404, "Organisation not found");
+    }
+    if (!org.member_ids.includes(user.id)) {
+      return httpError(403, "You are not a member of this organisation");
+    }
+
+    const channel = await this.channels.getChannel(channelId);
+    if (!channel) {
+      return httpError(404, "Channel not found");
+    }
+
+    if (!file) {
+      return httpError(400, "File is required");
+    }
+
+    const filen = file.originalname.split(".");
+    const fileExt = filen.pop();
+    const fileName = `messages/${orgId}/${channelId}/${nanoid.customAlphabet(
+      "abcdefghijklmnopqrstuvwxyz1234567890",
+      6
+    )}_${slugify(filen.join(".").substring(0, 100) + "." + fileExt, {
+      replacement: "_",
+      lower: true
+    })}`;
+
+    await new Promise((x, y) => {
+      this.b2.s3.putObject(
+        {
+          Bucket: process.env.B2_BUCKET!,
+          Key: fileName,
+          Body: file.buffer,
+          ContentType: file.mimetype
+        },
+        (err, data) => {
+          if (err) y(err);
+          else x(data);
+        }
+      );
+    });
+
+    return await this.channels.db.chatMessages.create({
+      data: {
+        user: { connect: { id: user.id } },
+        type: "file",
+        content: fileName,
+        channel: { connect: { id: channelId } }
+      }
+    });
+  }
+
+  @Put(":channelId/messages/file/:messageId")
+  updateFileMessage() {
+    return httpError(501, "Updating file messages is not yet supported");
+  }
+
+  @Delete(":channelId/messages/file/:messageId")
+  @UseGuards(IsLoggedIn)
+  async deleteFileMessage(
+    @Param("orgId") orgId: string,
+    @Param("channelId") channelId: string,
+    @Param("messageId") messageId: string,
+    @GetUser() user: User
+  ) {
+    const org = await this.organisations.getOrgById(orgId);
+    if (!org) {
+      return httpError(404, "Organisation not found");
+    }
+    if (!org.member_ids.includes(user.id)) {
+      return httpError(403, "You are not a member of this organisation");
+    }
+
+    const channel = await this.channels.getChannel(channelId);
+    if (!channel) {
+      return httpError(404, "Channel not found");
+    }
+
+    const message = await this.channels.db.chatMessages.findFirst({
+      where: {
+        id: messageId
+      }
+    });
+    if (!message) {
+      return httpError(404, "Message not found");
+    }
+
+    if (message.user_id !== user.id) {
+      return httpError(403, "You are not the owner of this message");
+    }
+
+    const fileName = message.content;
+    await new Promise((x, y) => {
+      this.b2.s3.deleteObject(
+        {
+          Bucket: process.env.B2_BUCKET!,
+          Key: fileName
+        },
+        (err, data) => {
+          if (err) y(err);
+          else x(data);
+        }
+      );
+    });
 
     return await this.channels.db.chatMessages.delete({
       where: {
