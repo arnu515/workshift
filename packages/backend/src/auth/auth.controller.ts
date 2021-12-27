@@ -78,7 +78,7 @@ export class AuthController {
   @Post("isregistered")
   async isRegistered(@Body() body: { email: string }) {
     const user = await this.auth.getUser(body.email);
-    return { isRegistered: user ? true : false };
+    return { isRegistered: user ? true : false, provider: user?.provider };
   }
 
   @Get("callback")
