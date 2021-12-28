@@ -5,7 +5,7 @@ import type { Organisation, OrganisationInvites, User } from "@prisma/client";
 import { getMessage } from "../util";
 
 export const organisations = (() => {
-  const { set, update, subscribe } = writable<Organisation[]>();
+  const { set, update, subscribe } = writable<Organisation[] | null>(null);
 
   const refresh = async () => {
     const { status, data } = await axios.get<{
@@ -29,7 +29,7 @@ export interface Invite extends OrganisationInvites {
 }
 
 export const invites = (() => {
-  const { set, update, subscribe } = writable<Invite[]>();
+  const { set, update, subscribe } = writable<Invite[] | null>(null);
 
   const refresh = async () => {
     const { status, data } = await axios.get<{
@@ -66,7 +66,7 @@ export const invites = (() => {
 })();
 
 export const organisation = (() => {
-  const { set, update, subscribe } = writable<Organisation | null>();
+  const { set, update, subscribe } = writable<Organisation | null>(null);
 
   const refresh = async (orgId: string) => {
     const { status, data } = await axios.get("/organisations/" + orgId);
