@@ -84,7 +84,7 @@
     <Route path="/" component={Index} />
     <Route path="/logout" component={Logout} />
     <Route path="/org/:orgId/*orgRoute" let:params>
-      <OrgLayout orgId={params.orgId} />
+      <OrgLayout orgId={params.orgId} path={params.orgRoute} />
     </Route>
     <Route component={NotFound} />
   {/if}
