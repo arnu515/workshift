@@ -44,8 +44,8 @@ export const invites = (() => {
   };
 })();
 
-export const organisation = () => {
-  const { set, update, subscribe } = writable<Organisation>();
+export const organisation = (() => {
+  const { set, update, subscribe } = writable<Organisation | null>();
 
   const refresh = async (orgId: string) => {
     const { status, data } = await axios.get("/organisations/" + orgId);
@@ -59,4 +59,4 @@ export const organisation = () => {
     subscribe,
     refresh
   };
-};
+})();
