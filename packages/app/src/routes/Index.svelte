@@ -5,6 +5,7 @@
   import Loader from "../lib/components/Loader.svelte";
   import { toast } from "@zerodevx/svelte-toast";
   import dayjs from "dayjs";
+  import { Link } from "svelte-navigator";
 
   let timeAtLastOrgRefresh = Date.now() - 1000 * 60;
   let timeAtLastInvRefresh = Date.now() - 1000 * 60;
@@ -87,8 +88,8 @@
           />
         </svg></button
       >
-      <a
-        href="/org/new"
+      <Link
+        to="/org/new"
         title="Create"
         aria-label="Create a new organisation"
         class="p-2 bg-transparent text-primary hover:bg-sky-50 rounded-full cursor-pointer duration-500 transition-colors"
@@ -107,7 +108,7 @@
             d="M12 4v16m8-8H4"
           />
         </svg>
-      </a>
+      </Link>
     </div>
   </h2>
   {#if $organisations === null}
@@ -116,8 +117,8 @@
     <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {#if $organisations.length}
         {#each $organisations as o}
-          <a
-            href="/org/{o.id}"
+          <Link
+            to="/org/{o.id}"
             class="rounded-xl p-4 md:p-0 md:flex shadow-lg cursor-pointer bg-white hover:bg-gray-50 hover:border hover:border-gray-400 transition-all duration-100 outline-none focus:border-2 focus:border-black"
           >
             <img
@@ -178,7 +179,7 @@
                 </li>
               </ul>
             </div>
-          </a>
+          </Link>
         {/each}
       {:else}
         <p class="text-xl my-2">You're not part of an organisation yet.</p>
