@@ -10,6 +10,7 @@
   import Index from "./routes/Index.svelte";
   import NotFound from "./routes/NotFound.svelte";
   import Navbar from "./lib/components/Navbar.svelte";
+  import Logout from "./routes/logout.svelte";
 
   let loading = true;
 
@@ -55,6 +56,7 @@
   {:else}
     <Navbar />
     <Route path="/" component={Index} />
+    <Route path="/logout" component={Logout} />
     <Route component={NotFound} />
   {/if}
 </Router>
