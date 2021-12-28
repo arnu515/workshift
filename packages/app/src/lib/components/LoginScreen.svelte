@@ -58,12 +58,10 @@
   class="bg-white border border-gray-400 text-black px-6 py-4 rounded"
   transition:slide={{ duration: 400, delay: 100 }}
 >
-  {#if loginType === "none"}
+  {#if loginType === "register"}
+    <h1 class="text-5xl font-bold my-4">Register to WorkShift</h1>
+  {:else}
     <h1 class="text-5xl font-bold my-4">Sign in to WorkShift</h1>
-  {:else if loginType === "login"}
-    <h1 class="text-5xl font-bold my-4">Login</h1>
-  {:else if loginType === "register"}
-    <h1 class="text-5xl font-bold my-4">Register</h1>
   {/if}
   {#if loginType === "none"}
     <form
