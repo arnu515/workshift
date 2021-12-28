@@ -1,14 +1,35 @@
 <script lang="ts">
   import { Route } from "svelte-navigator";
   import OrgIndex from "./Index.svelte";
+  import { organisation } from "../../../lib/stores/organisation";
+  import Loading from "../../../lib/components/Loading.svelte";
+  import { onMount } from "svelte";
+  import NotFound from "../../../routes/NotFound.svelte";
 
   export let orgId: string;
+  let loading = false;
+  let orgFound = false;
+
+  onMount(async () => {
+    await organisation.refresh(orgId);
+    orgFound = !!$organisation?.id;
+    loading = false;
+  });
 </script>
 
-<Route path="">
-  <OrgIndex {orgId} />
-</Route>
+{#if loading}
+  <Loading />
+{:else if !orgFound}
+  <NotFound
+    title="404 Organisation not found"
+    message="This organisation doesn't exist."
+  />
+{:else}
+  <Route path="">
+    <OrgIndex {orgId} />
+  </Route>
 
-<Route path="chat">
-  <h1>chat</h1>
-</Route>
+  <Route path="chat">
+    <h1>chat</h1>
+  </Route>
+{/if}
