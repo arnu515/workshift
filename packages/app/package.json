@@ -32,6 +32,7 @@
   "dependencies": {
     "@zerodevx/svelte-toast": "^0.6.3",
     "axios": "^0.24.0",
+    "dayjs": "^1.10.7",
     "qs": "^6.10.2",
     "svelte-navigator": "^3.1.5"
   }
