@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { organisation } from "../../../lib/stores/organisation";
-  import user from "../../../lib/stores/user";
+  import { organisation } from "$lib/stores/organisation";
+  import user from "$lib/stores/user";
 
   import { onMount } from "svelte";
   import { Link, navigate } from "svelte-navigator";

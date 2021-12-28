@@ -1,8 +1,8 @@
 <script lang="ts">
-  import user from "../lib/stores/user";
+  import user from "$lib/stores/user";
   import { onMount } from "svelte";
-  import { organisations, invites } from "../lib/stores/organisation";
-  import Loader from "../lib/components/Loader.svelte";
+  import { organisations, invites } from "$lib/stores/organisation";
+  import Loader from "$lib/components/Loader.svelte";
   import { toast } from "@zerodevx/svelte-toast";
   import dayjs from "dayjs";
   import { Link } from "svelte-navigator";

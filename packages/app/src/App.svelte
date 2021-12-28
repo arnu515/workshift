@@ -1,18 +1,18 @@
 <script lang="ts">
   import { SvelteToast, SvelteToastOptions, toast } from "@zerodevx/svelte-toast";
-  import LoginScreen from "./lib/components/LoginScreen.svelte";
-  import Loading from "./lib/components/Loading.svelte";
-  import user from "./lib/stores/user";
+  import LoginScreen from "$lib/components/LoginScreen.svelte";
+  import Loading from "$lib/components/Loading.svelte";
+  import user from "$lib/stores/user";
   import { onMount } from "svelte";
-  import axios from "./lib/axios";
-  import { invites, organisations } from "./lib/stores/organisation";
+  import axios from "$lib/axios";
+  import { invites, organisations } from "$lib/stores/organisation";
   import { Router, Route } from "svelte-navigator";
-  import Index from "./routes/Index.svelte";
-  import NotFound from "./routes/NotFound.svelte";
-  import Navbar from "./lib/components/Navbar.svelte";
-  import Logout from "./routes/logout.svelte";
+  import Index from "$routes/Index.svelte";
+  import NotFound from "$routes/NotFound.svelte";
+  import Navbar from "$lib/components/Navbar.svelte";
+  import Logout from "$routes/logout.svelte";
   import qs from "qs";
-  import OrgLayout from "./routes/org/[id]/__layout.svelte";
+  import OrgLayout from "$routes/org/[id]/__layout.svelte";
 
   let loading = true;
 

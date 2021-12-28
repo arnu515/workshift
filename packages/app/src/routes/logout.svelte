@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import axios from "../lib/axios";
-  import user from "../lib/stores/user";
+  import axios from "$lib/axios";
+  import user from "$lib/stores/user";
   import { navigate } from "svelte-navigator";
 
   onMount(async () => {
