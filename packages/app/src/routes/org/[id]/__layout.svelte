@@ -2,6 +2,7 @@
   import { Route } from "svelte-navigator";
   import OrgIndex from "./Index.svelte";
   import OrgInvite from "./Invite.svelte";
+  import OrgSettings from "./Settings.svelte";
   import { organisation } from "$lib/stores/organisation";
   import Loading from "$lib/components/Loading.svelte";
   import Sidebar from "$lib/components/Sidebar.svelte";
@@ -39,5 +40,6 @@
     </Route>
 
     <Route path="invite" component={OrgInvite} />
+    <Route path="settings" component={OrgSettings} />
   </main>
 {/if}
