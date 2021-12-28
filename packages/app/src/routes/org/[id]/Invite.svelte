@@ -1,15 +1,9 @@
-<script lang="ts" context="module">
-  import type { Load } from "@sveltejs/kit";
-  export const load: Load = ({ stuff }) => {
-    return { props: stuff };
-  };
-</script>
-
 <script lang="ts">
   import type { Organisation } from "@prisma/client";
   import { onMount } from "svelte";
-  import { user } from "$lib/stores/user";
-  import { goto } from "$app/navigation";
+  import user from "$lib/stores/user";
+  import { organisation } from "$lib/stores/organisation";
+  import { navigate } from "svelte-navigator";
   import axios from "$lib/axios";
   import { toast } from "@zerodevx/svelte-toast";
   import { getMessage } from "$lib/util";
@@ -17,7 +11,6 @@
   import Loader from "$lib/components/Loader.svelte";
   import { isMongoId } from "class-validator";
   import qs from "qs";
-  export let organisation: Organisation;
 
   let pendingInvites: ({ invitedUser: User } & { [key: string]: string })[] | null =
     null;
@@ -25,24 +18,20 @@
   let searchLoading = false;
 
   async function getPendingInvites() {
-    const res = await axios.get(`/organisations/${organisation.id}/invites`);
-    if (res.status === 401) {
-      $user = null;
-      return;
-    }
+    const res = await axios.get(`/organisations/${$organisation.id}/invites`);
     if (res.status.toString().startsWith("2")) pendingInvites = res.data.invites;
     else toast.push(getMessage(res));
   }
 
   onMount(async () => {
-    if (organisation.owner_id !== $user.id)
-      return goto(`/org/${organisation.id}/chats`);
+    if ($organisation.owner_id !== $user.id)
+      return navigate(`/org/${$organisation.id}/chats`);
     await getPendingInvites();
   });
 
   async function cancelInvite(invite: typeof pendingInvites[number]) {
     const res = await axios.delete(
-      `/organisations/${organisation.id}/invites/${invite.id}`
+      `/organisations/${$organisation.id}/invites/${invite.id}`
     );
     if (res.status.toString().startsWith("2")) {
       pendingInvites = pendingInvites.filter(i => i.id !== invite.id);
@@ -57,7 +46,7 @@
     if (!searchString) return;
     searchLoading = true;
     if (isMongoId(searchString)) {
-      const res = await axios.post(`/organisations/${organisation.id}/invites`, {
+      const res = await axios.post(`/organisations/${$organisation.id}/invites`, {
         userId: searchString
       });
       searchLoading = false;
@@ -84,7 +73,7 @@
   }
 
   async function inviteUser(user: any) {
-    const res = await axios.post(`/organisations/${organisation.id}/invites`, {
+    const res = await axios.post(`/organisations/${$organisation.id}/invites`, {
       userId: user._id["$oid"]
     });
     if (res.status.toString().startsWith("2")) {

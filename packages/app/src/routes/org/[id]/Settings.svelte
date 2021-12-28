@@ -1,26 +1,15 @@
-<script lang="ts" context="module">
-  import type { Load } from "@sveltejs/kit";
-  export const load: Load = ({ stuff }) => {
-    return {
-      props: stuff
-    };
-  };
-</script>
-
 <script lang="ts">
-  import type { Organisation } from "@prisma/client";
+  import { organisation } from "$lib/stores/organisation";
   import axios from "$lib/axios";
   import { toast } from "@zerodevx/svelte-toast";
   import { getMessage } from "$lib/util";
 
-  export let organisation: Organisation;
-
-  let org = { ...organisation };
+  let org = { ...$organisation };
   let loading = false;
 
   async function updateOrg() {
     loading = true;
-    const res = await axios.put("/organisations/" + organisation.id, {
+    const res = await axios.put("/organisations/" + $organisation.id, {
       name: org.name,
       description: org.description,
       imageUrl: org.imageUrl,
@@ -38,7 +27,7 @@
     window.location.reload();
   }
 
-  $: console.log({ organisation });
+  $: console.log({ organisation: $organisation });
 </script>
 
 <div class="p-4">
@@ -50,7 +39,7 @@
         type="text"
         id="name"
         bind:value={org.name}
-        placeholder={organisation.name}
+        placeholder={$organisation.name}
         class:loading
         disabled={loading}
       />
@@ -62,7 +51,7 @@
         type="text"
         id="description"
         bind:value={org.description}
-        placeholder={organisation.description}
+        placeholder={$organisation.description}
         style="resize: vertical"
         class:loading
         disabled={loading}
@@ -74,7 +63,7 @@
         type="url"
         id="imageUrl"
         bind:value={org.imageUrl}
-        placeholder={organisation.imageUrl}
+        placeholder={$organisation.imageUrl}
         class:loading
         disabled={loading}
       />
@@ -85,7 +74,7 @@
         type="website"
         id="website"
         bind:value={org.website}
-        placeholder={organisation.website || "https://example.org"}
+        placeholder={$organisation.website || "https://example.org"}
         class:loading
         disabled={loading}
       />
@@ -96,7 +85,7 @@
         type="location"
         id="location"
         bind:value={org.location}
-        placeholder={organisation.location || "City, Country"}
+        placeholder={$organisation.location || "City, Country"}
         class:loading
         disabled={loading}
       />
@@ -108,7 +97,7 @@
         type="address"
         id="address"
         bind:value={org.address}
-        placeholder={organisation.address || "Address"}
+        placeholder={$organisation.address || "Address"}
         class:loading
         disabled={loading}
         style="resize: vertical"
@@ -120,7 +109,7 @@
         type="email"
         id="email"
         bind:value={org.email}
-        placeholder={organisation.email || "hey@example.org"}
+        placeholder={$organisation.email || "hey@example.org"}
         class:loading
         disabled={loading}
       />
@@ -130,7 +119,7 @@
         class="bg-gray-500 text-white rounded px-4 py-2 cursor-pointer"
         title="Reset"
         aria-label="Reset"
-        on:click={() => (org = { ...organisation })}
+        on:click={() => (org = { ...$organisation })}
         type="button"
       >
         Reset

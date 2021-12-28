@@ -1,24 +1,24 @@
 <script lang="ts">
-  import { user } from "$lib/stores/user";
+  import user from "$lib/stores/user";
   import { onMount } from "svelte";
-  import { org } from "$lib/stores/org";
-  import { invites } from "$lib/stores/invites";
+  import { organisations, invites } from "$lib/stores/organisation";
   import Loader from "$lib/components/Loader.svelte";
   import { toast } from "@zerodevx/svelte-toast";
   import dayjs from "dayjs";
+  import { Link } from "svelte-navigator";
 
   let timeAtLastOrgRefresh = Date.now() - 1000 * 60;
   let timeAtLastInvRefresh = Date.now() - 1000 * 60;
 
   onMount(async () => {
-    await org.refresh();
-    await invites.refresh();
+    if (!$organisations) await organisations.refresh();
+    if (!$invites) await invites.refresh();
   });
 
   function refreshOrg() {
     if (Date.now() - timeAtLastOrgRefresh > 1000 * 60) {
       timeAtLastOrgRefresh = Date.now();
-      org.refresh();
+      organisations.refresh();
     } else
       toast.push(
         `Please wait ${Math.floor(
@@ -42,14 +42,14 @@
   async function acceptInvite(inviteId: string, orgId: string) {
     $invites = $invites.filter(inv => inv.id !== inviteId);
     await invites.acceptOrDeclineInvite({ id: inviteId, orgId, action: "accept" });
-    await org.refresh();
+    await organisations.refresh();
     await invites.refresh();
   }
 
   async function declineInvite(inviteId: string, orgId: string) {
     $invites = $invites.filter(inv => inv.id !== inviteId);
     await invites.acceptOrDeclineInvite({ id: inviteId, orgId, action: "decline" });
-    await org.refresh();
+    await organisations.refresh();
     await invites.refresh();
   }
 </script>
@@ -88,8 +88,8 @@
           />
         </svg></button
       >
-      <a
-        href="/org/new"
+      <Link
+        to="/org/new"
         title="Create"
         aria-label="Create a new organisation"
         class="p-2 bg-transparent text-primary hover:bg-sky-50 rounded-full cursor-pointer duration-500 transition-colors"
@@ -108,17 +108,17 @@
             d="M12 4v16m8-8H4"
           />
         </svg>
-      </a>
+      </Link>
     </div>
   </h2>
-  {#if $org === null}
+  {#if $organisations === null}
     <Loader />
   {:else}
     <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {#if $org.length}
-        {#each $org as o}
-          <a
-            href="/org/{o.id}"
+      {#if $organisations.length}
+        {#each $organisations as o}
+          <Link
+            to="/org/{o.id}"
             class="rounded-xl p-4 md:p-0 md:flex shadow-lg cursor-pointer bg-white hover:bg-gray-50 hover:border hover:border-gray-400 transition-all duration-100 outline-none focus:border-2 focus:border-black"
           >
             <img
@@ -179,7 +179,7 @@
                 </li>
               </ul>
             </div>
-          </a>
+          </Link>
         {/each}
       {:else}
         <p class="text-xl my-2">You're not part of an organisation yet.</p>
@@ -228,7 +228,7 @@
             <div class="flex flex-col text-center md:text-left m-2">
               <h3 class="text-4xl font-bold">{i.organisation.name}</h3>
               <p class="text-sm text-gray-600">
-                Created on {dayjs(i.created_at).format("MMM DD, YYYY")}
+                Invited on {dayjs(i.created_at).format("MMM DD, YYYY")}
               </p>
               <p class="inv-actions">
                 <button
