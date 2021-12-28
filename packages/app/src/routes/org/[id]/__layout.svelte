@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Route } from "svelte-navigator";
   import OrgIndex from "./Index.svelte";
+  import OrgInvite from "./Invite.svelte";
   import { organisation } from "$lib/stores/organisation";
   import Loading from "$lib/components/Loading.svelte";
   import Sidebar from "$lib/components/Sidebar.svelte";
@@ -36,5 +37,7 @@
     <Route path="chat">
       <h1>chat</h1>
     </Route>
+
+    <Route path="invite" component={OrgInvite} />
   </main>
 {/if}
