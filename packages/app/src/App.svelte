@@ -12,6 +12,7 @@
   import Navbar from "./lib/components/Navbar.svelte";
   import Logout from "./routes/logout.svelte";
   import qs from "qs";
+  import OrgLayout from "./routes/org/[id]/__layout.svelte";
 
   let loading = true;
 
@@ -82,6 +83,9 @@
     <Navbar />
     <Route path="/" component={Index} />
     <Route path="/logout" component={Logout} />
+    <Route path="/org/:orgId/*orgRoute" let:params>
+      <OrgLayout orgId={params.orgId} />
+    </Route>
     <Route component={NotFound} />
   {/if}
 </Router>
