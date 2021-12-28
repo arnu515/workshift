@@ -9,6 +9,7 @@
   import { Router, Link, Route } from "svelte-navigator";
   import Index from "./routes/Index.svelte";
   import NotFound from "./routes/NotFound.svelte";
+  import Navbar from "./lib/components/Navbar.svelte";
 
   let loading = true;
 
@@ -52,6 +53,7 @@
       <LoginScreen />
     </div>
   {:else}
+    <Navbar />
     <Route path="/" component={Index} />
     <Route component={NotFound} />
   {/if}
