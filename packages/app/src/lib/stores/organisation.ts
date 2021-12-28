@@ -1,7 +1,7 @@
 import axios from "../axios";
 import { writable } from "svelte/store";
 import { toast } from "@zerodevx/svelte-toast";
-import type { Organisation, OrganisationInvites } from "@prisma/client";
+import type { Organisation, OrganisationInvites, User } from "@prisma/client";
 import { getMessage } from "../util";
 
 export const organisations = (() => {
@@ -24,23 +24,44 @@ export const organisations = (() => {
   };
 })();
 
+export interface Invite extends OrganisationInvites {
+  organisation: Organisation & { owner: User };
+}
+
 export const invites = (() => {
-  const { set, update, subscribe } = writable<OrganisationInvites[]>();
+  const { set, update, subscribe } = writable<Invite[]>();
 
   const refresh = async () => {
     const { status, data } = await axios.get<{
-      invites: OrganisationInvites[];
+      invites: Invite[];
       message: any;
     }>("/organisations/invites");
     if (status === 200) set(data.invites);
     else toast.push(getMessage({ status, data }));
   };
 
+  const acceptOrDeclineInvite = async ({
+    id,
+    orgId,
+    action
+  }: {
+    id: string;
+    orgId: string;
+    action: "accept" | "decline";
+  }) => {
+    const res = await axios.patch(`/organisations/${orgId}/invites/${id}`, { action });
+    if (!res.status.toString().startsWith("2")) {
+      toast.push(getMessage(res));
+    }
+    return res.data;
+  };
+
   return {
     set,
     update,
     subscribe,
-    refresh
+    refresh,
+    acceptOrDeclineInvite
   };
 })();
 
