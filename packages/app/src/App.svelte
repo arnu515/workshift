@@ -5,6 +5,7 @@
   import user from "./lib/stores/user";
   import { onMount } from "svelte";
   import axios from "./lib/axios";
+  import { invites, organisations } from "./lib/stores/organisation";
 
   let loading = true;
 
@@ -26,6 +27,9 @@
     } else {
       $user = null;
     }
+
+    await organisations.refresh();
+    await invites.refresh();
 
     loading = false;
   });
