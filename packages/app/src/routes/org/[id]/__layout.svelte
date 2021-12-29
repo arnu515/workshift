@@ -8,6 +8,7 @@
   import Sidebar from "$lib/components/Sidebar.svelte";
   import { onMount } from "svelte";
   import NotFound from "$routes/NotFound.svelte";
+import OrgChat from "./chat.svelte";
 
   export let orgId: string;
   export let path: string;
@@ -35,10 +36,7 @@
       <OrgIndex {orgId} />
     </Route>
 
-    <Route path="chat">
-      <h1>chat</h1>
-    </Route>
-
+    <Route path="chat" component={OrgChat} />
     <Route path="invite" component={OrgInvite} />
     <Route path="settings" component={OrgSettings} />
   </main>
