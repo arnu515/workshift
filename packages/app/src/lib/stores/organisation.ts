@@ -1,7 +1,13 @@
 import axios from "../axios";
-import { writable } from "svelte/store";
+import { writable, get } from "svelte/store";
 import { toast } from "@zerodevx/svelte-toast";
-import type { Organisation, OrganisationInvites, User } from "@prisma/client";
+import type {
+  Organisation,
+  OrganisationInvites,
+  User,
+  ChatChannels,
+  ChatMessages
+} from "@prisma/client";
 import { getMessage } from "../util";
 
 export const organisations = (() => {
@@ -81,3 +87,56 @@ export const organisation = (() => {
     refresh
   };
 })();
+
+export const channels = (() => {
+  const { set, update, subscribe } = writable<ChatChannels[] | null>(null);
+
+  const refresh = async (orgId: string) => {
+    const { status, data } = await axios.get("/organisations/" + orgId + "/channels");
+    if (status === 200) set(data.channels);
+    else toast.push(getMessage({ status, data }));
+  };
+
+  return {
+    set,
+    update,
+    subscribe,
+    refresh
+  };
+})();
+
+export const messages = (() => {
+  const { set, update, subscribe } = writable<{
+    [key: ChatChannels["id"]]: ChatMessages[];
+  }>({});
+
+  const refresh = async (orgId: string, channelId: string, force = false) => {
+    if (!force && get(messages)[channelId]) return;
+    const { status, data } = await axios.get(
+      "/organisations/" + orgId + "/channels/" + channelId + "/messages"
+    );
+    if (status !== 200) {
+      toast.push(getMessage({ status, data }));
+      return;
+    }
+    update(x => {
+      x[channelId] = data.messages;
+      return x;
+    });
+    lastMessage.update(x => {
+      x[channelId] = data.messages[0]?.id;
+      return x;
+    });
+  };
+
+  return {
+    set,
+    update,
+    subscribe,
+    refresh
+  };
+})();
+
+export const lastMessage = writable<{
+  [key: ChatChannels["id"]]: ChatMessages["id"] | null | undefined;
+}>({});
