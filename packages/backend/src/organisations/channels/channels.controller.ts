@@ -286,6 +286,9 @@ export class ChannelsController {
         type: "text",
         content: text,
         channel: { connect: { id: channelId } }
+      },
+      include: {
+        user: true
       }
     });
   }
@@ -381,6 +384,9 @@ export class ChannelsController {
       },
       where: {
         id: messageId
+      },
+      include: {
+        user: true
       }
     });
   }
@@ -422,6 +428,9 @@ export class ChannelsController {
     return await this.channels.db.chatMessages.delete({
       where: {
         id: messageId
+      },
+      include: {
+        user: true
       }
     });
   }
@@ -483,6 +492,9 @@ export class ChannelsController {
         type: "file",
         content: fileName,
         channel: { connect: { id: channelId } }
+      },
+      include: {
+        user: true
       }
     });
   }
@@ -543,6 +555,9 @@ export class ChannelsController {
     return await this.channels.db.chatMessages.delete({
       where: {
         id: messageId
+      },
+      include: {
+        user: true
       }
     });
   }

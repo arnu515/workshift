@@ -47,6 +47,9 @@ export class ChannelsService {
       orderBy: {
         created_at: "desc"
       },
+      include: {
+        user: true
+      },
       where: {
         channel_id: channelId
       }
