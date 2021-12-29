@@ -44,6 +44,9 @@ export class ChannelsService {
     return this.db.chatMessages.findMany({
       skip,
       take,
+      orderBy: {
+        created_at: "desc"
+      },
       where: {
         channel_id: channelId
       }
