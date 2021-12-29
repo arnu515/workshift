@@ -3,7 +3,7 @@
   import { organisation } from "../stores/organisation";
 </script>
 
-<nav class="flex justify-between items-center bg-primary text-white">
+<nav class="flex justify-between items-center bg-primary text-white fixed top-0 left-0 w-full">
   <div class="flex items-center gap-2">
     <Link class="px-4 py-2 font-bold text-lg cursor-pointer" to="/">WorkShift</Link>
     {#if $organisation}
