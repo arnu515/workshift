@@ -193,8 +193,8 @@ export class ChannelsController {
     @Param("orgId") orgId: string,
     @Param("channelId") channelId: string,
     @GetUser() user: User,
-    @Query("skip") skip?: number,
-    @Query("take") take?: number
+    @Query("skip") skipFromQ?: string,
+    @Query("take") takeFromQ?: string
   ) {
     const org = await this.organisations.getOrgById(orgId);
     if (!org) {
@@ -204,8 +204,10 @@ export class ChannelsController {
       return httpError(403, "You are not a member of this organisation");
     }
 
-    if (!skip) skip = 0;
-    if (!take) take = 100;
+    let skip = parseInt(skipFromQ || "0"),
+      take = parseInt(takeFromQ || "100");
+    if (isNaN(skip)) skip = 0;
+    if (isNaN(take)) take = 100;
     const messages = await this.channels.getMessages(channelId, skip, take);
     if (!messages) {
       return httpError(404, "Channel not found");
