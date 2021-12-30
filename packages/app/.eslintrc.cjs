@@ -8,6 +8,14 @@ module.exports = {
   settings: {
     "svelte3/typescript": () => require("typescript")
   },
+  rules: {
+    "prettier/prettier": "warn",
+    "no-unused-vars": "warn",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-non-null-assertion": "off"
+  },
   parserOptions: {
     sourceType: "module",
     ecmaVersion: 2020
