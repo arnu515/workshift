@@ -215,6 +215,24 @@
     }
   }
 
+  async function createChannel() {
+    const name = window.prompt("Channel name");
+    console.log(name);
+    if (!name) {
+      toast.push("Message not edited");
+      return;
+    }
+    const res = await axios.post(`/organisations/${$organisation.id}/channels`, {
+      name
+    });
+    if (res.status.toString().startsWith("2")) {
+      channels.refresh($organisation.id);
+      toast.push("Channel created", { theme: { "--toastBarBackground": "green" } });
+    } else {
+      toast.push(getMessage(res));
+    }
+  }
+
   onMount(async () => {
     channels.refresh($organisation.id);
   });
@@ -226,7 +244,30 @@
 
 <div class="grid" style="grid-template-columns: 300px auto; height: calc(100vh - 44px)">
   <div class="bg-gray-200 border-r border-gray-400">
-    <h1 class="text-3xl font-bold m-2 py-2">{$organisation.name}</h1>
+    <h1 class="text-3xl font-bold m-2 py-2 flex items-center justify-between">
+      {$organisation.name}
+      <button
+        title="Create channel"
+        aria-label="Create a channel"
+        class="p-2 bg-transparent text-primary hover:bg-sky-50 rounded-full cursor-pointer duration-500 transition-colors"
+        on:click={createChannel}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          />
+        </svg>
+      </button>
+    </h1>
     {#if !$channels}
       <div class="m-2">
         <Loader />
