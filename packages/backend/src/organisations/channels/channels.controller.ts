@@ -468,10 +468,11 @@ export class ChannelsController {
     const fileName = `messages/${orgId}/${channelId}/${nanoid.customAlphabet(
       "abcdefghijklmnopqrstuvwxyz1234567890",
       6
-    )}_${slugify(filen.join(".").substring(0, 100) + "." + fileExt, {
+    )()}_${slugify(filen.join(".").substring(0, 100) + "." + fileExt, {
       replacement: "_",
       lower: true
     })}`;
+    console.log(fileName);
 
     await new Promise((x, y) => {
       this.b2.s3.putObject(
