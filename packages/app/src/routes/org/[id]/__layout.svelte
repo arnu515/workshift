@@ -9,6 +9,7 @@
   import { onMount } from "svelte";
   import NotFound from "$routes/NotFound.svelte";
   import OrgChat from "./chat.svelte";
+  import OrgDm from "./dm.svelte";
 
   export let orgId: string;
   export let path: string;
@@ -37,6 +38,7 @@
     </Route>
 
     <Route path="chat" component={OrgChat} />
+    <Route path="dm" component={OrgDm} />
     <Route path="invite" component={OrgInvite} />
     <Route path="settings" component={OrgSettings} />
   </main>
