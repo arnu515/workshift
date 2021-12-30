@@ -463,6 +463,10 @@ export class ChannelsController {
       return httpError(400, "File is required");
     }
 
+    if (file.size > 2097152) {
+      return httpError(400, "File must be smaller than 2mb");
+    }
+
     const filen = file.originalname.split(".");
     const fileExt = filen.pop();
     const fileName = `messages/${orgId}/${channelId}/${nanoid.customAlphabet(
