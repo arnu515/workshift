@@ -8,8 +8,8 @@
   import Sidebar from "$lib/components/Sidebar.svelte";
   import { onMount } from "svelte";
   import NotFound from "$routes/NotFound.svelte";
-  import OrgChat from "./chat.svelte";
-  import OrgDm from "./dm.svelte";
+  import OrgChat from "./Chat.svelte";
+  import OrgDm from "./Dm.svelte";
 
   export let orgId: string;
   export let path: string;
