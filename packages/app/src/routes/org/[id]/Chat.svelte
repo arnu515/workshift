@@ -99,7 +99,6 @@
     const input = document.createElement("input");
     input.type = "file";
     input.click();
-    console.log("hm");
     input.addEventListener("change", async e => {
       const el = e.target as HTMLInputElement;
       if (el.files.length) {
@@ -198,7 +197,6 @@
 
   async function editChannel(channel: any) {
     const newText = window.prompt("New name", channel.name);
-    console.log(newText);
     if (!newText) {
       toast.push("Message not edited");
       return;
@@ -217,7 +215,6 @@
 
   async function createChannel() {
     const name = window.prompt("Channel name");
-    console.log(name);
     if (!name) {
       toast.push("Message not edited");
       return;
