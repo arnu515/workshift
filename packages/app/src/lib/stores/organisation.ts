@@ -9,6 +9,7 @@ import type {
   ChatMessages
 } from "@prisma/client";
 import { getMessage } from "../util";
+import qs from "qs";
 
 export const organisations = (() => {
   const { set, update, subscribe } = writable<Organisation[] | null>(null);
@@ -107,13 +108,27 @@ export const channels = (() => {
 
 export const messages = (() => {
   const { set, update, subscribe } = writable<{
-    [key: ChatChannels["id"]]: ChatMessages[];
+    [key: ChatChannels["id"]]: (ChatMessages & { user: User })[];
   }>({});
 
-  const refresh = async (orgId: string, channelId: string, force = false) => {
+  const refresh = async (
+    orgId: string,
+    channelId: string,
+    force = false,
+    skip = 0,
+    take = 20
+  ) => {
     if (!force && get(messages)[channelId]) return;
     const { status, data } = await axios.get(
-      "/organisations/" + orgId + "/channels/" + channelId + "/messages"
+      "/organisations/" +
+        orgId +
+        "/channels/" +
+        channelId +
+        "/messages?" +
+        qs.stringify({
+          skip,
+          take
+        })
     );
     if (status !== 200) {
       toast.push(getMessage({ status, data }));
