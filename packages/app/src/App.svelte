@@ -82,12 +82,12 @@
   {:else}
     <Navbar />
     <div class="mt-[44px]">
-    <Route path="/" component={Index} />
-    <Route path="/logout" component={Logout} />
-    <Route path="/org/:orgId/*orgRoute" let:params>
-      <OrgLayout orgId={params.orgId} path={params.orgRoute} />
-    </Route>
-    <Route component={NotFound} />
+      <Route path="/" component={Index} />
+      <Route path="/logout" component={Logout} />
+      <Route path="/org/:orgId/*orgRoute" let:params>
+        <OrgLayout orgId={params.orgId} path={params.orgRoute} />
+      </Route>
+      <Route component={NotFound} />
     </div>
   {/if}
 </Router>
