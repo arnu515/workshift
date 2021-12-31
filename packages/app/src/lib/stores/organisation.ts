@@ -78,7 +78,10 @@ export const organisation = (() => {
   const refresh = async (orgId: string) => {
     const { status, data } = await axios.get("/organisations/" + orgId);
     if (status === 200) set(data);
-    else toast.push(getMessage({ status, data }));
+    else {
+      toast.push(getMessage({ status, data }));
+      set(null);
+    }
   };
 
   return {
