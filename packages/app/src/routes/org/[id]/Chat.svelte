@@ -198,7 +198,7 @@
   async function editChannel(channel: any) {
     const newText = window.prompt("New name", channel.name);
     if (!newText) {
-      toast.push("Message not edited");
+      toast.push("Channel not edited");
       return;
     }
     const res = await axios.put(
@@ -216,7 +216,7 @@
   async function createChannel() {
     const name = window.prompt("Channel name");
     if (!name) {
-      toast.push("Message not edited");
+      toast.push("Channel not edited");
       return;
     }
     const res = await axios.post(`/organisations/${$organisation.id}/channels`, {
