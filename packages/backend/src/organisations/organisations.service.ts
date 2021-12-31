@@ -24,7 +24,8 @@ export class CreateOrganisationBody {
 
   @IsUrl({ require_protocol: true })
   @IsNotEmpty()
-  imageUrl: string;
+  @IsOptional()
+  imageUrl?: string;
 
   @IsOptional()
   @IsUrl({ require_protocol: true })
@@ -113,28 +114,32 @@ export class OrganisationsService {
 
   async createOrganisation(body: CreateOrganisationBody, owner: User) {
     // check that imageUrl is a url from Imgur or Gravatar
-    const imageUrl = new URL(body.imageUrl);
-    if (
-      !["i.imgur.com", "gravatar.com", "assets.workshift.gq"].includes(
-        imageUrl.hostname
-      )
-    ) {
-      return "Image URL must be from either Imgur or Gravatar or be locally hosted";
-    }
+    if (body.imageUrl) {
+      const imageUrl = new URL(body.imageUrl);
+      if (
+        !["i.imgur.com", "gravatar.com", "assets.workshift.gq"].includes(
+          imageUrl.hostname
+        )
+      ) {
+        return "Image URL must be from either Imgur or Gravatar or be locally hosted";
+      }
 
-    // check that imageUrl resolves to a valid image
-    try {
-      const res = await axios.get(body.imageUrl);
-      if (res.status !== 200) {
+      // check that imageUrl resolves to a valid image
+      try {
+        const res = await axios.get(body.imageUrl);
+        if (res.status !== 200) {
+          return "Image URL must resolve to a valid image";
+        }
+        if (
+          !["image/png", "image/jpeg", "image/jpg"].includes(
+            res.headers["content-type"]
+          )
+        ) {
+          return "Image URL should be a PNG or JPG image";
+        }
+      } catch (err) {
         return "Image URL must resolve to a valid image";
       }
-      if (
-        !["image/png", "image/jpeg", "image/jpg"].includes(res.headers["content-type"])
-      ) {
-        return "Image URL should be a PNG or JPG image";
-      }
-    } catch (err) {
-      return "Image URL must resolve to a valid image";
     }
 
     if (body.location && body.location.split(",").length > 2) {
