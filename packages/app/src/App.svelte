@@ -12,6 +12,7 @@
   import Navbar from "$lib/components/Navbar.svelte";
   import Logout from "$routes/logout.svelte";
   import qs from "qs";
+  import OrgNew from "$routes/org/New.svelte";
   import OrgLayout from "$routes/org/[id]/__layout.svelte";
 
   let loading = true;
@@ -87,6 +88,7 @@
       <Route path="/org/:orgId/*orgRoute" let:params>
         <OrgLayout orgId={params.orgId} path={params.orgRoute} />
       </Route>
+      <Route path="/org/new" component={OrgNew} />
       <Route component={NotFound} />
     </div>
   {/if}
