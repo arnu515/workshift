@@ -25,7 +25,7 @@ model Organisation {
   id          String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
   v           Int?     @map("__v")
   description String
-  imageUrl    String
+  imageUrl    String   @default("https://assets.workshift.gq/img/dmpteam.png")
   member_ids  String[] @db.Array(ObjectId)
   name        String
   owner_id    String   @db.ObjectId
@@ -47,7 +47,7 @@ model User {
   id               String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
   v                Int?     @map("__v")
   email            String   @unique(map: "email_1")
-  avatarUrl        String   @default("https://www.gravatar.com/avatar/00000000000000000000000000000000.png?d=mp&s=64")
+  avatarUrl        String   @default("https://assets.workshift.gq/img/dmps64.jpeg")
   provider         String
   providerData     Json?
   providerId       String
