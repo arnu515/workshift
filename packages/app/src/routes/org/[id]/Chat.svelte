@@ -46,10 +46,10 @@
     }
   }
 
-  function refreshMessages(channelId: ChatChannels["id"], skip = 0, take = 20) {
+  function refreshMessages(channelId: ChatChannels["id"], skip = 0, take = 100) {
     if (Date.now() - timeRefreshed > 1000 * 60) {
       timeRefreshed = Date.now();
-      messages.refresh($organisation.id, channelId, true);
+      messages.refresh($organisation.id, channelId, true, skip, take);
     } else
       toast.push(
         `Please wait ${Math.floor(
@@ -78,8 +78,8 @@
         currentChannel.id +
         "/messages?" +
         qs.stringify({
-          skip: page * 20,
-          take: 20
+          skip: page * 100,
+          take: 100
         })
     );
     if (status !== 200) {
