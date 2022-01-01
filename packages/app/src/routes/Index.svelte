@@ -54,8 +54,8 @@
   }
 </script>
 
-<main class="m-4">
-  <h1 class="text-5xl font-bold my-6">Welcome to WorkShift</h1>
+<main class="p-4">
+  <h1 class="text-5xl font-bold py-6">Welcome to WorkShift</h1>
   <p class="text-2xl">
     Signed in as <img
       src="https://gravatar.com/avatar/{$user.email}?d=mp&s=32"
