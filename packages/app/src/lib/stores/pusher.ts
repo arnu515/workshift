@@ -64,11 +64,49 @@ export const createEventHandler = (orgId: Organisation["id"]) => {
       case "chat-message":
         switch (action) {
           case "insert":
+            console.log("Message inserted", data.id);
+            if (org.id === orgId) {
+              // just refresh message because user is not included in data.doc
+              messages.refresh(orgId, data.doc.channel_id, true);
+              const channel = get(channels).find(
+                channel => channel.id === data.doc.channel_id
+              );
+              if (channel) {
+                const t = document.createElement("textarea");
+                t.textContent = channel.name;
+                const channelName = t.innerHTML;
+                t.textContent = data.doc.content;
+                const messageContent = t.innerHTML;
+                toast.push(
+                  "New " +
+                    data.doc.type +
+                    " message in <strong>" +
+                    channelName +
+                    "</strong>.<br>" +
+                    messageContent,
+                  {
+                    theme: {
+                      "--toastBarBackground": "blue"
+                    }
+                  }
+                );
+              }
+            }
             break;
           case "update":
           case "replace":
+            console.log("Message updated", data.id);
+            if (org.id === orgId) {
+              // just refresh message because user is not included in data.doc
+              messages.refresh(orgId, data.doc.channel_id, true);
+            }
             break;
           case "delete":
+            console.log("Message deleted", data.id);
+            if (org.id === orgId) {
+              // just refresh message because user is not included in data.doc
+              messages.refresh(orgId, data.doc.channel_id, true);
+            }
             break;
         }
         break;
