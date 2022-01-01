@@ -15,17 +15,24 @@
 
   let currentChannel: ChatChannels | null = null;
   let timeRefreshed = Date.now() - 1000 * 60;
+  let doingSomething = false;
 
   let typedMessage = "";
   async function sendMessage() {
     if (!currentChannel) return;
     if (!typedMessage.trim()) return;
+    if (doingSomething) {
+      toast.push("Please wait for the previous action to finish.");
+      return;
+    }
+    doingSomething = true;
     const res = await axios.post(
       `/organisations/${$organisation.id}/channels/${currentChannel.id}/messages/text`,
       {
         text: typedMessage.trim()
       }
     );
+    doingSomething = false;
     typedMessage = "";
 
     if (res.status.toString().startsWith("2")) {
@@ -46,10 +53,17 @@
     }
   }
 
-  function refreshMessages(channelId: ChatChannels["id"], skip = 0, take = 20) {
+  function refreshMessages(channelId: ChatChannels["id"], skip = 0, take = 100) {
+    if (doingSomething) {
+      toast.push("Please wait for the previous action to finish.");
+      return;
+    }
     if (Date.now() - timeRefreshed > 1000 * 60) {
       timeRefreshed = Date.now();
-      messages.refresh($organisation.id, channelId, true);
+      doingSomething = true;
+      messages
+        .refresh($organisation.id, channelId, true, skip, take)
+        .then(() => (doingSomething = false));
     } else
       toast.push(
         `Please wait ${Math.floor(
@@ -61,6 +75,10 @@
   let hasMoreMessages = true;
   async function loadMoreMessages() {
     if (!currentChannel) return;
+    if (doingSomething) {
+      toast.push("Please wait for the previous action to finish.");
+      return;
+    }
     if (Date.now() - timeRefreshed < 1000 * 60) {
       toast.push(
         `Please wait ${Math.floor(
@@ -71,6 +89,7 @@
     }
     if (!hasMoreMessages) return;
     const page = Math.ceil($messages[currentChannel.id].length / 20);
+    doingSomething = true;
     const { status, data } = await axios.get(
       "/organisations/" +
         $organisation.id +
@@ -78,10 +97,11 @@
         currentChannel.id +
         "/messages?" +
         qs.stringify({
-          skip: page * 20,
-          take: 20
+          skip: page * 100,
+          take: 100
         })
     );
+    doingSomething = false;
     if (status !== 200) {
       toast.push(getMessage({ status, data }));
       return;
@@ -96,6 +116,10 @@
   }
 
   function uploadFile() {
+    if (doingSomething) {
+      toast.push("Please wait for the previous action to finish.");
+      return;
+    }
     const input = document.createElement("input");
     input.type = "file";
     input.click();
@@ -114,10 +138,12 @@
         const fd = new FormData();
         fd.append("file", file);
         toast.push("Uploading file", { theme: { "--toastBarBackground": "gray" } });
+        doingSomething = true;
         const res = await axios.post(
           `/organisations/${$organisation.id}/channels/${currentChannel.id}/messages/file`,
           fd
         );
+        doingSomething = false;
         if (res.status.toString().startsWith("2")) {
           toast.push("File uploaded", { theme: { "--toastBarBackground": "green" } });
           messages.update(m => {
@@ -140,9 +166,15 @@
   }
 
   async function deleteMessage(message: any) {
+    if (doingSomething) {
+      toast.push("Please wait for the previous action to finish.");
+      return;
+    }
+    doingSomething = true;
     const res = await axios.delete(
       `/organisations/${$organisation.id}/channels/${currentChannel.id}/messages/${message.type}/${message.id}`
     );
+    doingSomething = false;
     if (res.status.toString().startsWith("2")) {
       messages.update(m => {
         const i = currentChannel.id;
@@ -157,6 +189,10 @@
   }
 
   async function editMessage(message: any) {
+    if (doingSomething) {
+      toast.push("Please wait for the previous action to finish.");
+      return;
+    }
     const newText = window.prompt(
       "Edit message. Use <br> for line breaks.",
       message.content
@@ -165,10 +201,12 @@
       toast.push("Message not edited");
       return;
     }
+    doingSomething = true;
     const res = await axios.put(
       `/organisations/${$organisation.id}/channels/${currentChannel.id}/messages/${message.type}/${message.id}`,
       { text: newText }
     );
+    doingSomething = false;
     if (res.status.toString().startsWith("2")) {
       messages.update(m => {
         const i = currentChannel.id;
@@ -184,9 +222,15 @@
   }
 
   async function deleteChannel(channel: any) {
+    if (doingSomething) {
+      toast.push("Please wait for the previous action to finish.");
+      return;
+    }
+    doingSomething = true;
     const res = await axios.delete(
       `/organisations/${$organisation.id}/channels/${channel.id}`
     );
+    doingSomething = false;
     if (res.status.toString().startsWith("2")) {
       channels.refresh($organisation.id);
       if (currentChannel?.id === channel.id) {
@@ -199,15 +243,21 @@
   }
 
   async function editChannel(channel: any) {
+    if (doingSomething) {
+      toast.push("Please wait for the previous action to finish.");
+      return;
+    }
     const newText = window.prompt("New name", channel.name);
     if (!newText) {
       toast.push("Channel not edited");
       return;
     }
+    doingSomething = true;
     const res = await axios.put(
       `/organisations/${$organisation.id}/channels/${channel.id}`,
       { name: newText }
     );
+    doingSomething = false;
     if (res.status.toString().startsWith("2")) {
       channels.refresh($organisation.id);
       toast.push("Channel edited", { theme: { "--toastBarBackground": "green" } });
@@ -217,14 +267,20 @@
   }
 
   async function createChannel() {
+    if (doingSomething) {
+      toast.push("Please wait for the previous action to finish.");
+      return;
+    }
     const name = window.prompt("Channel name");
     if (!name) {
       toast.push("Channel not edited");
       return;
     }
+    doingSomething = true;
     const res = await axios.post(`/organisations/${$organisation.id}/channels`, {
       name
     });
+    doingSomething = false;
     if (res.status.toString().startsWith("2")) {
       channels.refresh($organisation.id);
       toast.push("Channel created", { theme: { "--toastBarBackground": "green" } });

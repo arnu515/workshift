@@ -6,10 +6,12 @@
   import { organisation } from "$lib/stores/organisation";
   import Loading from "$lib/components/Loading.svelte";
   import Sidebar from "$lib/components/Sidebar.svelte";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import NotFound from "$routes/NotFound.svelte";
   import OrgChat from "./Chat.svelte";
   import OrgDm from "./Dm.svelte";
+  import OrgMembers from "./Members.svelte";
+  import { orgConnection } from "$lib/stores/pusher";
 
   export let orgId: string;
   export let path: string;
@@ -20,7 +22,11 @@
     await organisation.refresh(orgId);
     orgFound = !!$organisation?.id;
     loading = false;
+
+    if (orgFound) orgConnection.sub($organisation.id);
   });
+
+  onDestroy(orgConnection.unsub);
 </script>
 
 {#if loading}
@@ -39,6 +45,7 @@
 
     <Route path="chat" component={OrgChat} />
     <Route path="dm" component={OrgDm} />
+    <Route path="members" component={OrgMembers} />
     <Route path="invite" component={OrgInvite} />
     <Route path="settings" component={OrgSettings} />
   </main>
