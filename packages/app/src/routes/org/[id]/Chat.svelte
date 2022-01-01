@@ -189,6 +189,9 @@
     );
     if (res.status.toString().startsWith("2")) {
       channels.refresh($organisation.id);
+      if (currentChannel?.id === channel.id) {
+        currentChannel = undefined;
+      }
       toast.push("Channel deleted", { theme: { "--toastBarBackground": "green" } });
     } else {
       toast.push(getMessage(res));
