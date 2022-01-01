@@ -27,6 +27,16 @@
     window.location.reload();
   }
 
+  async function deleteOrganisation() {
+    const res = await axios.delete(`/organisations/${$organisation.id}`);
+    if (!res.status.toString().startsWith("2")) {
+      toast.push(getMessage(res));
+      return;
+    }
+    // do a hard reload to reset all stores
+    window.location.href = "/";
+  }
+
   $: console.log({ organisation: $organisation });
 </script>
 
@@ -129,4 +139,23 @@
       >
     </div>
   </form>
+
+  <div
+    class="mt-6 p-4 border border-red-500"
+    on:click={() =>
+      window.confirm("Are you sure?") &&
+      window.confirm("Last warning") &&
+      deleteOrganisation()}
+  >
+    <h2 class="text-3xl font-bold text-red-500 flex items-center justify-between">
+      Delete organisation
+      <button class="bg-red-500 text-white px-4 py-2 rounded border border-transparent"
+        >Delete</button
+      >
+    </h2>
+    <p class="text-red-500 text-xl mt-2">
+      This action is <strong>IRREVERSIBLE</strong>. All channels, messages and files
+      will be lost <strong>FOREVER</strong>
+    </p>
+  </div>
 </div>

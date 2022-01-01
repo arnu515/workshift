@@ -219,6 +219,14 @@ export class OrganisationsService {
     });
   }
 
+  async deleteOrganisation(orgId: string) {
+    return await this.db.organisation.delete({
+      where: {
+        id: orgId
+      }
+    });
+  }
+
   async addUserToOrg(userId: string, orgId: string) {
     const org = await this.db.organisation.findFirst({
       where: { id: orgId }

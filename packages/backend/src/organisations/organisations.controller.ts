@@ -115,6 +115,25 @@ export class OrganisationsController {
     return updatedOrg;
   }
 
+  @Delete("/:id")
+  @UseGuards(IsLoggedIn)
+  async deleteOrganisation(@Param("id") orgId: string, @GetUser() user: User) {
+    if (!isMongoId(orgId)) {
+      return httpError(400, "Invalid ID");
+    }
+
+    const org = await this.organisationsService.getOrgById(orgId);
+    if (!org) {
+      return httpError(404, "Organisation not found");
+    }
+
+    if (org.owner_id !== user.id.toString()) {
+      return httpError(403, "You don't own this organisation");
+    }
+
+    return await this.organisationsService.deleteOrganisation(orgId);
+  }
+
   @Post("/:id/invites")
   @UseGuards(IsLoggedIn)
   async inviteToOrganisation(
