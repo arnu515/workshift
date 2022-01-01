@@ -112,12 +112,20 @@ export const createEventHandler = (orgId: Organisation["id"]) => {
         break;
       case "organisation":
         switch (action) {
-          case "insert":
-            break;
+          // no insert event here.
           case "update":
           case "replace":
+            if (org.id === orgId) {
+              organisation.refresh(orgId);
+            }
             break;
           case "delete":
+            if (org.id === orgId) {
+              toast.push(
+                "This organisation has been deleted. Redirecting you back to the home page."
+              );
+              setTimeout(() => (window.location.href = "/"), 3000);
+            }
             break;
         }
         break;
