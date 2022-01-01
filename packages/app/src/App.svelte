@@ -14,6 +14,7 @@
   import qs from "qs";
   import OrgNew from "$routes/org/New.svelte";
   import OrgLayout from "$routes/org/[id]/__layout.svelte";
+  import Pusher from "pusher-js";
 
   let loading = true;
 
@@ -29,6 +30,8 @@
   };
 
   onMount(async () => {
+    if (import.meta.env.DEV) Pusher.logToConsole = true;
+
     const query = qs.parse(window.location.search.slice(1));
     if (query.message) {
       // escape any *evil* characters
