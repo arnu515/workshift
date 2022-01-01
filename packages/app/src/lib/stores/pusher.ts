@@ -1,6 +1,6 @@
 import { writable, get } from "svelte/store";
 import Pusher from "pusher-js";
-import { channels, organisation, messages } from "./organisation";
+import { channels, organisation, messages, invites } from "./organisation";
 import { toast } from "@zerodevx/svelte-toast";
 import user from "./user";
 import type { Channel } from "pusher-js";
@@ -169,4 +169,38 @@ export const orgConnection = (() => {
     sub,
     unsub
   };
+})();
+
+export const invConnection = (() => {
+  const { set, subscribe, update } = writable<Channel | null>(null);
+
+  const unsub = () => {
+    const prevConn = get(invConnection);
+    if (prevConn !== null) {
+      console.log("%cUnsubscribed from invites", "color: red; font-size: 24px;");
+      prevConn.unbind_all();
+      prevConn.unsubscribe();
+    }
+  };
+
+  const sub = () => {
+    const u = get(user);
+    if (!u) return;
+    unsub();
+    console.log("%cSubscribed to invites", "color: green; font-size: 24px;");
+    const channel = pusher.subscribe("invites");
+    channel.bind(u.id + ".insert", () => {
+      toast.push(
+        "You have been invited to join an organisation. Head to the home page to view the invitation.",
+        { theme: { "--toastBarBackground": "blue" } }
+      );
+      invites.refresh();
+    });
+    channel.bind(u.id + ".delete", () => {
+      invites.refresh();
+    });
+    set(channel);
+  };
+
+  return { set, subscribe, update, sub, unsub };
 })();

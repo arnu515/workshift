@@ -3,7 +3,7 @@
   import LoginScreen from "$lib/components/LoginScreen.svelte";
   import Loading from "$lib/components/Loading.svelte";
   import user from "$lib/stores/user";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import axios from "$lib/axios";
   import { invites, organisations } from "$lib/stores/organisation";
   import { Router, Route } from "svelte-navigator";
@@ -15,6 +15,7 @@
   import OrgNew from "$routes/org/New.svelte";
   import OrgLayout from "$routes/org/[id]/__layout.svelte";
   import Pusher from "pusher-js";
+  import { invConnection } from "$lib/stores/pusher";
 
   let loading = true;
 
@@ -70,8 +71,11 @@
     if (user) {
       await organisations.refresh();
       await invites.refresh();
+      invConnection.sub();
     }
   });
+
+  onDestroy(invConnection.unsub);
 </script>
 
 <SvelteToast options={opts} />
