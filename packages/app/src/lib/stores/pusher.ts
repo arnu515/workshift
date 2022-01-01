@@ -142,7 +142,7 @@ export const pusher = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY.toString(),
 export const connection = (() => {
   const { set, subscribe, update } = writable<Connection | null>(null);
 
-  const sub = (id: Organisation["id"]) => {
+  const unsub = () => {
     const prevConn = get(connection);
     if (prevConn !== null) {
       console.log(
@@ -152,6 +152,10 @@ export const connection = (() => {
       prevConn.channel.unbind_all();
       prevConn.channel.unsubscribe();
     }
+  };
+
+  const sub = (id: Organisation["id"]) => {
+    unsub();
     console.log("%cSubscribed to " + id, "color: green; font-size: 24px;");
     const channel = pusher.subscribe("organisation-" + id);
     channel.bind_global(createEventHandler(id));
@@ -162,6 +166,7 @@ export const connection = (() => {
     set,
     subscribe,
     update,
-    sub
+    sub,
+    unsub
   };
 })();

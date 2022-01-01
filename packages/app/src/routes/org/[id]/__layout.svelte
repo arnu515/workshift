@@ -6,7 +6,7 @@
   import { organisation } from "$lib/stores/organisation";
   import Loading from "$lib/components/Loading.svelte";
   import Sidebar from "$lib/components/Sidebar.svelte";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import NotFound from "$routes/NotFound.svelte";
   import OrgChat from "./Chat.svelte";
   import OrgDm from "./Dm.svelte";
@@ -24,6 +24,8 @@
 
     if (orgFound) connection.sub($organisation.id);
   });
+
+  onDestroy(connection.unsub);
 </script>
 
 {#if loading}
