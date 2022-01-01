@@ -10,6 +10,7 @@
   import NotFound from "$routes/NotFound.svelte";
   import OrgChat from "./Chat.svelte";
   import OrgDm from "./Dm.svelte";
+  import OrgShifts from "./Shifts.svelte";
   import OrgMembers from "./Members.svelte";
   import { orgConnection } from "$lib/stores/pusher";
 
@@ -45,6 +46,7 @@
 
     <Route path="chat" component={OrgChat} />
     <Route path="dm" component={OrgDm} />
+    <Route path="shifts" component={OrgShifts} />
     <Route path="members" component={OrgMembers} />
     <Route path="invite" component={OrgInvite} />
     <Route path="settings" component={OrgSettings} />
