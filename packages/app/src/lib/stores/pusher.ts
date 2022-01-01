@@ -139,11 +139,11 @@ export const pusher = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY.toString(),
   cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER.toString()
 });
 
-export const connection = (() => {
+export const orgConnection = (() => {
   const { set, subscribe, update } = writable<Connection | null>(null);
 
   const unsub = () => {
-    const prevConn = get(connection);
+    const prevConn = get(orgConnection);
     if (prevConn !== null) {
       console.log(
         "%cUnsubscribed from " + prevConn.orgId,
