@@ -15,8 +15,8 @@ model OrganisationInvites {
   user_id         String   @db.ObjectId
   created_at      DateTime @default(now())
 
-  organisation Organisation @relation(fields: [organisation_id], references: [id])
-  invitedUser  User         @relation(fields: [user_id], references: [id])
+  organisation Organisation @relation(fields: [organisation_id], references: [id], onDelete: Cascade)
+  invitedUser  User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("organisation_invites")
 }
@@ -36,7 +36,7 @@ model Organisation {
   created_at  DateTime @default(now())
 
   invites  OrganisationInvites[]
-  owner    User                  @relation(name: "owner", fields: [owner_id], references: [id])
+  owner    User                  @relation(name: "owner", fields: [owner_id], references: [id], onDelete: Cascade)
   members  User[]                @relation(name: "members", fields: [member_ids])
   channels ChatChannels[]
 
@@ -73,8 +73,8 @@ model ChatChannels {
   description     String?
   owner_id        String   @db.ObjectId
 
-  organisation Organisation @relation(fields: [organisation_id], references: [id])
-  owner        User         @relation(fields: [owner_id], references: [id])
+  organisation Organisation @relation(fields: [organisation_id], references: [id], onDelete: Cascade)
+  owner        User         @relation(fields: [owner_id], references: [id], onDelete: Cascade)
   messages     ChatMessages[]
 
   @@map("chat_channels")
@@ -90,8 +90,8 @@ model ChatMessages {
   content         String
   is_encrypted    Boolean  @default(false)
 
-  channel ChatChannels @relation(fields: [channel_id], references: [id])
-  user    User?         @relation(fields: [user_id], references: [id])
+  channel ChatChannels @relation(fields: [channel_id], references: [id], onDelete: Cascade)
+  user    User?         @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("chat_messages")
 }
