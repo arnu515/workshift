@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { navigate } from "svelte-navigator";
+  import { Link, navigate } from "svelte-navigator";
   import user from "$lib/stores/user";
   import axios from "$lib/axios";
   import { toast } from "@zerodevx/svelte-toast";
@@ -35,10 +35,10 @@
   <div class="border border-gray-400 shadow bg-white rounded px-4 py-2 mt-6">
     <div class="flex justify-between items-center my-4">
       <h1 class="text-2xl font-bold">Create Organization</h1>
-      <a
-        href="/"
+      <Link
+        to="/"
         class="text-primary hover:text-primary-700 hover:underline transition-colors duration-300"
-        >Home</a
+        >Home</Link
       >
     </div>
     <form on:submit|preventDefault={createOrg}>
