@@ -6,7 +6,7 @@ import user from "./user";
 import type { Channel } from "pusher-js";
 import type { Organisation } from "@prisma/client";
 
-type Connection = {
+type OrgConnection = {
   orgId: Organisation["id"];
   channel: Channel;
 };
@@ -140,7 +140,7 @@ export const pusher = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY.toString(),
 });
 
 export const orgConnection = (() => {
-  const { set, subscribe, update } = writable<Connection | null>(null);
+  const { set, subscribe, update } = writable<OrgConnection | null>(null);
 
   const unsub = () => {
     const prevConn = get(orgConnection);
