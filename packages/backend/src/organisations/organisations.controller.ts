@@ -68,7 +68,43 @@ export class OrganisationsController {
     if (!isMongoId(id)) {
       return httpError(400, "Invalid ID");
     }
-    return await this.organisationsService.getOrgWithMembers(id);
+    const org = await this.organisationsService.getOrgById(id);
+    if (!org) {
+      return httpError(404, "Organisation not found");
+    }
+    return await this.organisationsService.getOrgWithMembers(org.id);
+  }
+
+  @Delete(":id/members/:memberId")
+  @UseGuards(IsLoggedIn)
+  async removeMemberFromOrg(
+    @Param("id") id: string,
+    @Param("memberId") memberId: string,
+    @GetUser() user: User
+  ) {
+    if (!isMongoId(id)) {
+      return httpError(400, "Invalid ID");
+    }
+    const org = await this.organisationsService.getOrgById(id);
+    if (!org) {
+      return httpError(404, "Organisation not found");
+    }
+
+    if (org.owner_id !== user.id.toString()) {
+      return httpError(403, "You don't own this organisation");
+    }
+
+    if (user.id.toString() === memberId) {
+      return httpError(400, "You can't remove yourself from an organisation");
+    }
+
+    const res = await this.organisationsService.removeMemberFromOrg(memberId, org.id);
+
+    if (typeof res === "string") {
+      return httpError(400, res);
+    }
+
+    return res;
   }
 
   @Post("/")

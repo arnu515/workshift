@@ -239,11 +239,33 @@ export class OrganisationsService {
       return "User is already a member of this organisation";
     }
 
-    return this.db.organisation.update({
+    return await this.db.organisation.update({
       where: { id: orgId },
       data: {
         member_ids: {
           set: [...org.member_ids, userId]
+        }
+      }
+    });
+  }
+
+  async removeMemberFromOrg(userId: string, orgId: string) {
+    const org = await this.db.organisation.findFirst({
+      where: { id: orgId }
+    });
+    if (!org) {
+      return "Organisation not found";
+    }
+
+    if (!org.member_ids.includes(userId)) {
+      return "User is not a member of this organisation";
+    }
+
+    return await this.db.organisation.update({
+      where: { id: orgId },
+      data: {
+        members: {
+          disconnect: { id: userId }
         }
       }
     });
