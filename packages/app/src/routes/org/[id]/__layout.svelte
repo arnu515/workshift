@@ -10,6 +10,7 @@
   import NotFound from "$routes/NotFound.svelte";
   import OrgChat from "./Chat.svelte";
   import OrgDm from "./Dm.svelte";
+  import { connection } from "$lib/stores/pusher";
 
   export let orgId: string;
   export let path: string;
@@ -20,6 +21,8 @@
     await organisation.refresh(orgId);
     orgFound = !!$organisation?.id;
     loading = false;
+
+    if (orgFound) connection.sub($organisation.id);
   });
 </script>
 

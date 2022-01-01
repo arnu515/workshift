@@ -1,0 +1,121 @@
+import { writable, get } from "svelte/store";
+import Pusher from "pusher-js";
+import { channels, organisation, messages } from "./organisation";
+import { toast } from "@zerodevx/svelte-toast";
+import user from "./user";
+import type { Channel } from "pusher-js";
+import type { Organisation } from "@prisma/client";
+
+type Connection = {
+  orgId: Organisation["id"];
+  channel: Channel;
+};
+
+type EventCollection = "chat-channel" | "chat-message" | "organisation";
+
+type EventAction = "insert" | "update" | "delete" | "replace";
+
+type EventData = {
+  id: string;
+  doc: any;
+};
+
+export const createEventHandler = (orgId: Organisation["id"]) => {
+  const eventHandler = (eventName: string, data: EventData) => {
+    // abort if the event is from pusher
+    if (eventName.startsWith("pusher")) return;
+
+    // abort if data is not properly structured
+    if (!data || !data.id || !data.doc) return;
+    data.doc.id = data.doc._id; // mongodb returns _id, prisma uses id
+
+    // abort if the event was sent by the current user
+    console.log("%cNew event: " + eventName, "font-weight: bold; font-size: 20px");
+    console.log({ eventName, data });
+    if ((data.doc.user_id || data.doc.owner_id) === get(user).id) return;
+
+    const [collection, action] = eventName.split(".") as [EventCollection, EventAction];
+    const org = get(organisation);
+
+    switch (collection) {
+      case "chat-channel":
+        switch (action) {
+          case "insert":
+            console.log("Channel inserted", data.id);
+            if (org.id === orgId) channels.update(channels => [...channels, data.doc]);
+            break;
+          case "update":
+          case "replace":
+            console.log("Channel updated", data.id);
+            if (org.id === orgId)
+              channels.update(channels =>
+                channels.map(channel => (channel.id === data.id ? data.doc : channel))
+              );
+            break;
+          case "delete":
+            console.log("Channel deleted", data.id);
+            if (org.id === orgId)
+              channels.update(channels =>
+                channels.filter(channel => channel.id !== data.id)
+              );
+            break;
+        }
+        break;
+      case "chat-message":
+        switch (action) {
+          case "insert":
+            break;
+          case "update":
+          case "replace":
+            break;
+          case "delete":
+            break;
+        }
+        break;
+      case "organisation":
+        switch (action) {
+          case "insert":
+            break;
+          case "update":
+          case "replace":
+            break;
+          case "delete":
+            break;
+        }
+        break;
+    }
+  };
+
+  return eventHandler;
+};
+
+export const pusher = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY.toString(), {
+  cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER.toString()
+});
+
+export const connection = (() => {
+  const { set, subscribe, update } = writable<Connection | null>(null);
+
+  const sub = (id: Organisation["id"]) => {
+    const prevConn = get(connection);
+    if (prevConn !== null) {
+      console.log(
+        "%cUnsubscribed from " + prevConn.orgId,
+        "color: red; font-size: 24px;"
+      );
+      prevConn.channel.unbind_all();
+      prevConn.channel.unsubscribe();
+    }
+    console.log("%cSubscribed to " + id, "color: green; font-size: 24px;");
+    const channel = pusher.subscribe("organisation-" + id);
+    channel.bind_global(createEventHandler(id));
+    set({ orgId: id, channel });
+  };
+
+  return {
+    set,
+    subscribe,
+    update,
+    sub
+  };
+})();
