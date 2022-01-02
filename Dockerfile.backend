@@ -1,0 +1,49 @@
+# --------------- BUILDER IMAGE
+
+FROM node:14-alpine as builder
+
+WORKDIR /app
+
+RUN mkdir -p /app/packages/backend
+
+# install lerna
+# RUN yarn global add lerna
+
+COPY package.json .
+COPY yarn.lock .
+# COPY lerna.json .
+
+COPY ./packages/backend/package.json packages/backend
+
+RUN yarn workspace backend install
+
+COPY ./packages/backend packages/backend
+
+# generate prisma schema
+RUN yarn workspace backend run genschema
+
+RUN yarn workspace backend run build
+
+RUN ls /app/packages/backend
+
+# --------------- RUNNER IMAGE
+
+FROM node:14-alpine as runner
+
+WORKDIR /run
+
+COPY --from=builder /app/package.json .
+COPY --from=builder /app/yarn.lock .
+# COPY --from=builder lerna.json .
+
+RUN mkdir -p /run/packages/backend
+
+COPY --from=builder /app/packages/backend/package.json packages/backend
+COPY --from=builder /app/packages/backend/dist packages/backend/dist
+
+RUN yarn install --production
+
+# remove yarn.lock because it is massive
+RUN rm yarn.lock
+
+ENTRYPOINT [ "yarn", "workspace", "backend", "run", "start:prod" ]
