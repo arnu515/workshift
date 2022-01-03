@@ -8,6 +8,7 @@ import { grantConfig } from "./config/grant.config";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({ credentials: true, origin: [process.env.APP_URL!] });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.use(
     session({
