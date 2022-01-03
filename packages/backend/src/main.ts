@@ -13,7 +13,7 @@ async function bootstrap() {
     origin: [
       process.env.APP_URL!,
       "http://localhost:3000",
-      /https:\/\/.+arnu515.vercel.app/
+      /.arnu515\.vercel\.app$/
     ]
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
