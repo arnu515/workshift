@@ -43,7 +43,7 @@ jobs:
           HOST workshift-backend
             Hostname $SSH_HOST
             User $SSH_USER
-            IdentityFile ~/.ssh/workshfit-backend-key
+            IdentityFile ~/.ssh/workshift-backend-key
             StrictHostKeyChecking no
           END
       
