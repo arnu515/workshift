@@ -29,3 +29,24 @@ jobs:
       
       - name: Push to dockerhub
         run: docker push arnu515/workshift-backend:${{ github.ref_name || github.commit_sha || 'latest' }}
+      
+      - name: Configure SSh
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/workshift-backend-key
+          chmod 600 ~/.ssh/workshift-backend-key
+          cat >> ~/.ssh/.config <<END
+          HOST workshift-backend
+            Hostname $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/workshfit-backend-key
+            StrictHostKeyChecking no
+          END
+      
+      - name: SSH - Run deploy script
+        run: "ssh workshift-backend '~/deploy-workshift-backend.sh arnu515/workshift-backend:${{ github.ref_name || github.commit_sha || 'latest' }}'"
+      
