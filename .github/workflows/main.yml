@@ -39,7 +39,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_KEY" > ~/.ssh/workshift-backend-key
           chmod 600 ~/.ssh/workshift-backend-key
-          cat >> ~/.ssh/.config <<END
+          cat >> ~/.ssh/config <<END
           HOST workshift-backend
             Hostname $SSH_HOST
             User $SSH_USER
