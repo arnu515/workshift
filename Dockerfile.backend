@@ -43,6 +43,10 @@ COPY --from=builder /app/packages/backend/dist packages/backend/dist
 
 RUN yarn install --production
 
+# generate prisma schema
+RUN mkdir -p packages/backend/src/prisma
+COPY --from=builder /app/packages/backend/src/prisma/schema.prisma packages/backend/src/prisma/schema.prisma
+
 RUN yarn global add prisma
 
 RUN yarn workspace backend run genschema
