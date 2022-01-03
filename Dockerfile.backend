@@ -43,6 +43,8 @@ COPY --from=builder /app/packages/backend/dist packages/backend/dist
 
 RUN yarn install --production
 
+RUN yarn genschema
+
 # remove yarn.lock because it is massive
 RUN rm yarn.lock
 
