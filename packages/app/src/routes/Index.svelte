@@ -62,7 +62,7 @@
       alt="Your avatar"
       class="inline rounded-full mx-1"
     /> <strong>{$user.username}</strong>. Not you?
-    <a href="/logout" class="text-primary hover:underline">Logout</a>
+    <Link to="/logout" class="text-primary hover:underline">Logout</Link>
   </p>
 
   <h2 class="text-3xl my-4 flex items-center justify-between font-bold">
