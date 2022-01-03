@@ -39,6 +39,7 @@
   "dependencies": {
     "@zerodevx/svelte-toast": "^0.6.3",
     "axios": "^0.24.0",
+    "class-validator": "^0.13.2",
     "dayjs": "^1.10.7",
     "pusher-js": "^7.0.3",
     "qs": "^6.10.2",
