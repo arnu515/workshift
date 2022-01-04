@@ -1,6 +1,7 @@
 {
   "name": "app",
   "license": "Apache-2.0",
+  "version": "0.1.1",
   "description": "Main frontend for WorkShift",
   "url": "https://app.workshift.gq",
   "type": "module",
