@@ -16,6 +16,7 @@
   let currentChannel: ChatChannels | null = null;
   let timeRefreshed = Date.now() - 1000 * 60;
   let doingSomething = false;
+  let chatMessageEl: HTMLDivElement;
 
   let typedMessage = "";
   async function sendMessage() {
@@ -48,6 +49,7 @@
           ?.scrollIntoView({ behavior: "smooth" });
         return m;
       });
+      scrollDown();
     } else {
       toast.push(getMessage(res));
     }
@@ -158,6 +160,7 @@
               ?.scrollIntoView({ behavior: "smooth" });
             return m;
           });
+          scrollDown();
         } else {
           toast.push(getMessage(res));
         }
@@ -293,8 +296,14 @@
     channels.refresh($organisation.id);
   });
 
-  $: if (currentChannel) {
-    messages.refresh($organisation.id, currentChannel.id);
+  function scrollDown() {
+    setTimeout(() => {
+      if (chatMessageEl) chatMessageEl.scrollTop = chatMessageEl.scrollHeight;
+    }, 50);
+  }
+
+  $: if (currentChannel?.id) {
+    messages.refresh($organisation.id, currentChannel.id).then(scrollDown);
   }
 </script>
 
@@ -414,12 +423,15 @@
           </svg>
         </button>
       </header>
-      <div class="flex-grow overflow-auto">
+      <div class="flex-grow overflow-auto" bind:this={chatMessageEl}>
         {#if $messages[currentChannel.id]}
-          <div class="flex flex-col gap-2 m-4">
-            <p class="text-gray-500 text-center my-2 text-sm">
-              Messages are listed from top to bottom. The newest ones are at the top
-            </p>
+          <p class="text-center my-4">
+            You've reached the top. {#if hasMoreMessages}<button
+                class="text-primary cursor-pointer hover:underline"
+                on:click={loadMoreMessages}>Load more</button
+              >{/if}
+          </p>
+          <div class="flex flex-col-reverse gap-2 m-4">
             {#each $messages[currentChannel.id] as message}
               <div
                 id="message-{message.id}"
@@ -531,12 +543,6 @@
               </div>
             {/each}
           </div>
-          <p class="text-center my-4">
-            You've reached the bottom. {#if hasMoreMessages}<button
-                class="text-primary cursor-pointer hover:underline"
-                on:click={loadMoreMessages}>Load more</button
-              >{/if}
-          </p>
         {:else}
           <div class="my-4 flex justify-center items-center">
             <Loader />
