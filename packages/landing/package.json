@@ -1,6 +1,5 @@
 {
   "name": "landing",
-  "version": "0.1.0",
   "description": "Workshift landing page",
   "license": "Apache-2.0",
   "private": true,
