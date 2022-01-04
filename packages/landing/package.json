@@ -3,6 +3,10 @@
   "description": "Workshift landing page",
   "license": "Apache-2.0",
   "private": true,
+  "scripts": {
+    "dev": "gulp dev",
+    "gulp": "gulp"
+  },
   "devDependencies": {
     "autoprefixer": "^10.4.1",
     "cssnano": "^5.0.14",
