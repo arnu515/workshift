@@ -26,10 +26,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_LOGIN }}
           password: ${{ secrets.DOCKER_PW }}
-      
+
       - name: Push to dockerhub
         run: docker push arnu515/workshift-backend:${{ github.ref_name || github.commit_sha || 'latest' }}
-      
+
       - name: Configure SSh
         env:
           SSH_USER: ${{ secrets.SSH_USER }}
@@ -46,19 +46,32 @@ jobs:
             IdentityFile ~/.ssh/workshift-backend-key
             StrictHostKeyChecking no
           END
-      
+
       - name: SSH - Run deploy script
         run: "ssh workshift-backend '~/deploy-workshift-backend.sh arnu515/workshift-backend:${{ github.ref_name || github.commit_sha || 'latest' }}'"
-      
+
   frontend:
     runs-on: ubuntu-20.04
-    
+
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Deploy to vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: vercel --prod --token $VERCEL_TOKEN  packages/app
+
+  landing:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Deploy to vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_LANDING_PROJECT_ID }}
+        run: vercel --prod --token $VERCEL_TOKEN  packages/landing
