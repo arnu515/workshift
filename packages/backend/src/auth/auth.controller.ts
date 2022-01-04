@@ -84,6 +84,7 @@ export class AuthController {
   @Get("callback")
   async oauthCallback(@Session() session: Record<any, any>, @Res() res: Response) {
     function httpError(code: number, message: string) {
+      console.log("HTTP error", code, message);
       const url = new URL(process.env.APP_URL!);
       url.searchParams.set("status", code.toString());
       url.searchParams.set("message", message);
@@ -101,6 +102,7 @@ export class AuthController {
           }
         });
         const primaryVerifiedEmail = emails.find(i => i.primary && i.verified);
+        console.log("Email", { primaryVerifiedEmail, emails });
         if (!primaryVerifiedEmail) {
           return httpError(
             400,
@@ -109,6 +111,7 @@ export class AuthController {
         }
         email = primaryVerifiedEmail.email;
         username = session.grant.response.profile.login;
+        console.log("Email", email, "Username", username);
       } catch (e) {
         return { message: e.response.data.message };
       }
@@ -128,6 +131,7 @@ export class AuthController {
         providerId: session.grant.response.profile.id.toString(),
         providerData: session.grant.response
       });
+      console.log({ createdUser });
 
       if (typeof createdUser === "string") {
         return httpError(400, createdUser);
